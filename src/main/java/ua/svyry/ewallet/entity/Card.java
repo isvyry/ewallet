@@ -1,16 +1,12 @@
 package ua.svyry.ewallet.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Builder;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -32,6 +28,7 @@ public class Card {
     private Date expirationDate;
     @ManyToOne
     private Wallet wallet;
+    private boolean isDeleted;
     @OneToMany(mappedBy = "card")
     private List<Transaction> cardTransactions;
     @OneToMany(mappedBy = "receiver")

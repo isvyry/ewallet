@@ -14,7 +14,7 @@ public class CreateTransferTransactionRequestModelToTransactionDtoConverter
                 .builder()
                 .amount(source.getAmount())
                 .cardId(source.getCardId())
-                .receiverCardNumber(source.getReceiverCardNumber())
+                .receiverCardId(source.getReceiverCardId())
                 .build();
     }
 }

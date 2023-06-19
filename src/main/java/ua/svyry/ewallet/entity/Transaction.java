@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -30,5 +31,7 @@ public class Transaction {
     protected Date createdDate;
     @ManyToOne
     protected Card card;
+
+    protected boolean isSuccessful;
 
 }

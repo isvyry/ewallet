@@ -13,5 +13,5 @@ public class CreateTransferTransactionRequestModel {
 
     private BigDecimal amount;
     private Long cardId;
-    private Long receiverCardNumber;
+    private Long receiverCardId;
 }
