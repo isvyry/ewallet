@@ -48,11 +48,16 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                     .readValue(request.getInputStream(), LoginRequestModel.class);
 
             return getAuthenticationManager().authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequestModel.getEmail(),
+                    new UsernamePasswordAuthenticationToken(loginRequestModel.getUsername(),
                             loginRequestModel.getPassword(), new ArrayList<>()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+        super.unsuccessfulAuthentication(request, response, failed);
     }
 
     @Override

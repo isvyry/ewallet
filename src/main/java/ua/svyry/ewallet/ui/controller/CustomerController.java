@@ -1,6 +1,7 @@
 package ua.svyry.ewallet.ui.controller;
 
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/customers")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "Bearer Authentication")
 public class CustomerController {
 
     private final CustomerService customerService;

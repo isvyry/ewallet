@@ -12,15 +12,17 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateCustomerRequestModel {
-    @NotEmpty
-    @NotBlank
+
+    @NotBlank(message = "firstName should be provided")
     private String firstName;
-    @NotEmpty
-    @NotBlank
+
+    @NotBlank(message = "lastName should be provided")
     private String lastName;
-    @Email
+    @Email(message = "email should be in appropriate email-style format")
+    @NotBlank(message = "email should be provided")
     private String email;
 
     //@Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&-+=()])(?=\\S+$).{8,20}$")
+    @NotBlank(message = "password should be provided")
     private String password;
 }

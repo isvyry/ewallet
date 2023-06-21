@@ -52,7 +52,7 @@ public class CardService {
 
     public void depositFunds(Card card, BigDecimal amount) {
         addMoneyAndSave(card, amount);
-        log.info(String.format("Added %s EUR to the Card[id= %s, cardNumber = %s]", amount,
+        log.info(String.format("Added %s EUR to the Card[id = %s, cardNumber = %s]", amount,
                 card.getId(), card.getCardNumber()));
     }
 
@@ -64,7 +64,7 @@ public class CardService {
             return false;
         } else {
             deductMoneyAndSave(card, amount);
-            log.info(String.format("Withdrawn %s EUR from the Card[id= %s, cardNumber = %s].", amount,
+            log.info(String.format("Withdrawn %s EUR from the Card[id = %s, cardNumber = %s].", amount,
                     card.getId(), card.getCardNumber()));
             return true;
         }
@@ -79,8 +79,8 @@ public class CardService {
         } else {
             deductMoneyAndSave(from, amount);
             addMoneyAndSave(to, amount);
-            log.info(String.format("Transfer %s EUR from the Card[id= %s, cardNumber = %s] " +
-                            "to the Card[id= %s, cardNumber = %s] successfully finalized.", amount,
+            log.info(String.format("Transfer %s EUR from the Card[id = %s, cardNumber = %s] " +
+                            "to the Card[id = %s, cardNumber = %s] successfully finalized.", amount,
                     from.getId(), from.getCardNumber(), to.getId(), to.getCardNumber()));
             return true;
         }
@@ -98,7 +98,7 @@ public class CardService {
 
     public void deleteCard(Long id) {
         Card cardToDelete = getById(id);
-        log.warn(String.format("Deleting Card[id: %s, cardNumber: %s]", cardToDelete.getId(),
+        log.warn(String.format("Deleting Card[id = %s, cardNumber = %s]", cardToDelete.getId(),
                 cardToDelete.getCardNumber()));
         cardToDelete.setDeleted(true);
         cardRepository.save(cardToDelete);
@@ -108,7 +108,7 @@ public class CardService {
         Card card = cardRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Cannot find card with id: %s", id)));
         if (card.isDeleted()) {
-            throw new DeletedEntityException(String.format("Card[id: %s, cardNumber: %s] has been deleted",
+            throw new DeletedEntityException(String.format("Card[id = %s, cardNumber = %s] has been deleted",
                     card.getId(), card.getCardNumber()));
         }
         return card;

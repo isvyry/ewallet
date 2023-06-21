@@ -1,5 +1,6 @@
 package ua.svyry.ewallet.ui.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;;
 import org.springframework.core.convert.ConversionService;
@@ -12,9 +13,13 @@ import ua.svyry.ewallet.shared.CardDto;
 import ua.svyry.ewallet.ui.model.CreateCardRequestModel;
 import ua.svyry.ewallet.ui.model.CardResponseModel;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/cards")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "Bearer Authentication")
 public class CardController {
 
     private final CardService cardService;
@@ -37,27 +42,29 @@ public class CardController {
     }
 
     @GetMapping("/wallet/{walletId}")
-    public ResponseEntity<CardResponseModel> getAllByWallet(@PathVariable Long walletId,
-                                                            @RequestParam(defaultValue = "0") Integer pageNumber,
-                                                            @RequestParam(defaultValue = "20") Integer pageSize) {
-        CardResponseModel responseModel = conversionService.convert(cardService.getCardDetailsByWalletId(walletId,
-                        PageRequest.of(pageNumber, pageSize)),
-                CardResponseModel.class);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
+    public ResponseEntity<List<CardResponseModel>> getAllByWallet(@PathVariable Long walletId,
+                                                                 @RequestParam(defaultValue = "0") Integer pageNumber,
+                                                                 @RequestParam(defaultValue = "20") Integer pageSize) {
+        List<CardResponseModel> responseModel = cardService.getCardDetailsByWalletId(walletId,
+                        PageRequest.of(pageNumber, pageSize))
+                .stream().map(c -> conversionService.convert(c, CardResponseModel.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.status(HttpStatus.OK).body(responseModel);
     }
 
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<CardResponseModel> getAllByCustomer(@PathVariable Long customerId,
+    public ResponseEntity<List<CardResponseModel>> getAllByCustomer(@PathVariable Long customerId,
                                                               @RequestParam(defaultValue = "0") Integer pageNumber,
                                                               @RequestParam(defaultValue = "20") Integer pageSize) {
-        CardResponseModel responseModel = conversionService.convert(cardService.getCardDetailsByCustomerId(customerId,
-                        PageRequest.of(pageNumber, pageSize)),
-                CardResponseModel.class);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
+        List<CardResponseModel> responseModel = cardService.getCardDetailsByCustomerId(customerId,
+                        PageRequest.of(pageNumber, pageSize))
+                .stream().map(c -> conversionService.convert(c, CardResponseModel.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.status(HttpStatus.OK).body(responseModel);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteCard(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCard(@PathVariable Long id) {
         cardService.deleteCard(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

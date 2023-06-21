@@ -50,9 +50,12 @@ public class CustomerService implements UserDetailsService {
     public void unblockCustomer(Long id) {
         Customer customer = getCustomerById(id);
         customer.setBlockedForTransactions(false);
+        log.info(String.format("Unblocked customer[id: %s, walletId: %s, walletNumber: %s]",
+                customer.getId(), customer.getWallet().getId(), customer.getWallet().getWalletNumber()));
+        customerRepository.save(customer);
     }
 
-    public int unblockAllBlocked() {
+    public int unblockAllCustomers() {
         return customerRepository.updateAllBlockedForTransactionsTrue();
     }
 

@@ -1,5 +1,7 @@
 package ua.svyry.ewallet.ui.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
@@ -19,13 +21,14 @@ import ua.svyry.ewallet.ui.model.TransactionResult;
 @RequestMapping("/transactions")
 @RequiredArgsConstructor
 @Slf4j
+@SecurityRequirement(name = "Bearer Authentication")
 public class TransactionController {
 
     private final TransactionService transactionService;
     private final ConversionService conversionService;
 
     @PostMapping("/deposit")
-    public ResponseEntity<TransactionResult> deposit(@RequestBody
+    public ResponseEntity<TransactionResult> deposit(@RequestBody @Valid
                                                          CreateTransactionRequestModel
                                                                  createTransactionRequestModel) {
         TransactionDto transactionDetails = conversionService
@@ -34,7 +37,7 @@ public class TransactionController {
                 .convert(transactionService.depositFunds(transactionDetails), TransactionResult.class));
     }
     @PostMapping("/transfer")
-    public ResponseEntity<TransactionResult> transfer(@RequestBody
+    public ResponseEntity<TransactionResult> transfer(@RequestBody @Valid
                                                           CreateTransferTransactionRequestModel
                                                                   createTransferRequestModel) {
         TransactionDto transactionDetails = conversionService
@@ -43,7 +46,7 @@ public class TransactionController {
                 .convert(transactionService.transferFunds(transactionDetails), TransactionResult.class));
     }
     @PostMapping("/withdraw")
-    public ResponseEntity<TransactionResult> withdraw(@RequestBody
+    public ResponseEntity<TransactionResult> withdraw(@RequestBody @Valid
                                                           CreateTransactionRequestModel
                                                                   createTransactionRequestModel) {
         TransactionDto transactionDetails = conversionService

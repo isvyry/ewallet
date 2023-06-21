@@ -22,7 +22,7 @@ public class CustomerEnablingJob extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        int result = customerService.unblockAllBlocked();
+        int result = customerService.unblockAllCustomers();
         log.info(String.format("Unblocked %s customers", result));
     }
 }
