@@ -51,8 +51,7 @@ public class CardService {
     }
 
     public void depositFunds(Card card, BigDecimal amount) {
-        card.setBalance(card.getBalance().add(amount));
-        cardRepository.save(card);
+        addMoneyAndSave(card, amount);
         log.info(String.format("Added %s EUR to the Card[id= %s, cardNumber = %s]", amount,
                 card.getId(), card.getCardNumber()));
     }
@@ -64,8 +63,7 @@ public class CardService {
                     " Attempted withdraw amount: %s", card.getId(), card.getCardNumber(), amount));
             return false;
         } else {
-            card.setBalance(cardBalance.subtract(amount));
-            cardRepository.save(card);
+            deductMoneyAndSave(card, amount);
             log.info(String.format("Withdrawn %s EUR from the Card[id= %s, cardNumber = %s].", amount,
                     card.getId(), card.getCardNumber()));
             return true;
@@ -79,15 +77,23 @@ public class CardService {
                     " Attempted transfer amount: %s", from.getId(), from.getCardNumber(), amount));
             return false;
         } else {
-            from.setBalance(senderCardBalance.subtract(amount));
-            to.setBalance(to.getBalance().add(amount));
-            cardRepository.save(from);
-            cardRepository.save(to);
+            deductMoneyAndSave(from, amount);
+            addMoneyAndSave(to, amount);
             log.info(String.format("Transfer %s EUR from the Card[id= %s, cardNumber = %s] " +
                             "to the Card[id= %s, cardNumber = %s] successfully finalized.", amount,
                     from.getId(), from.getCardNumber(), to.getId(), to.getCardNumber()));
             return true;
         }
+    }
+
+    private void addMoneyAndSave(Card card, BigDecimal amount) {
+        card.setBalance(card.getBalance().add(amount));
+        cardRepository.save(card);
+    }
+
+    private void deductMoneyAndSave(Card card, BigDecimal amount) {
+        card.setBalance(card.getBalance().subtract(amount));
+        cardRepository.save(card);
     }
 
     public void deleteCard(Long id) {

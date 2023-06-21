@@ -5,16 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ua.svyry.ewallet.entity.Transfer;
-import ua.svyry.ewallet.entity.Deposit;
-import ua.svyry.ewallet.entity.Withdrawal;
-import ua.svyry.ewallet.entity.Card;
+import ua.svyry.ewallet.entity.*;
 import ua.svyry.ewallet.repository.DepositRepository;
+import ua.svyry.ewallet.repository.TransactionRepository;
 import ua.svyry.ewallet.repository.TransferRepository;
 import ua.svyry.ewallet.repository.WithdrawalRepository;
+import ua.svyry.ewallet.shared.CustomerDto;
 import ua.svyry.ewallet.shared.TransactionDto;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Date;
 
@@ -26,19 +26,19 @@ public class TransactionService {
 
     private final CardService cardService;
     private final ConversionService conversionService;
+    private final SuspiciousActivityService suspiciousActivityService;
     private final DepositRepository depositRepository;
     private final WithdrawalRepository withdrawalRepository;
     private final TransferRepository transferRepository;
+    private final TransactionRepository transactionRepository;
 
     public TransactionDto depositFunds(TransactionDto transactionDetails) {
         Card card = cardService.getById(transactionDetails.getCardId());
         Deposit depositTransaction = new Deposit();
         BigDecimal transactionAmount = transactionDetails.getAmount();
-        depositTransaction.setAmount(transactionDetails.getAmount());
-        depositTransaction.setCard(card);
-        depositTransaction.setCreatedDate(new Date(Instant.now().toEpochMilli()));
-        depositTransaction.setSuspicious(isTransactionSuspicious(transactionAmount));
-        boolean shouldBeSuccessful = !isAboveLimit(transactionAmount);
+        populateTransaction(depositTransaction, transactionAmount, card);
+        boolean shouldBeSuccessful = !isAboveLimit(transactionAmount) &&
+                suspiciousActivityService.isCustomerAllowedForTransactions(card.getWallet().getOwner());
         if (shouldBeSuccessful) {
             cardService.depositFunds(card, transactionAmount);
             depositTransaction.setSuccessful(true);
@@ -51,11 +51,9 @@ public class TransactionService {
         Card card = cardService.getById(transactionDetails.getCardId());
         Withdrawal withdrawalTransaction = new Withdrawal();
         BigDecimal transactionAmount = transactionDetails.getAmount();
-        withdrawalTransaction.setAmount(transactionDetails.getAmount());
-        withdrawalTransaction.setCard(card);
-        withdrawalTransaction.setCreatedDate(new Date(Instant.now().toEpochMilli()));
-        withdrawalTransaction.setSuspicious(isTransactionSuspicious(transactionAmount));
-        boolean shouldBeSuccessful = !isAboveLimit(transactionAmount);
+        populateTransaction(withdrawalTransaction, transactionAmount, card);
+        boolean shouldBeSuccessful = !isAboveLimit(transactionAmount) &&
+                suspiciousActivityService.isCustomerAllowedForTransactions(card.getWallet().getOwner());
         if (shouldBeSuccessful) {
             withdrawalTransaction.setSuccessful(cardService.withdrawFunds(card, transactionAmount));
         } else withdrawalTransaction.setSuccessful(false);
@@ -68,12 +66,9 @@ public class TransactionService {
         Card cardTo = cardService.getById(transactionDetails.getReceiverCardId());
         Transfer transferTransaction = new Transfer();
         BigDecimal transactionAmount = transactionDetails.getAmount();
-        transferTransaction.setAmount(transactionDetails.getAmount());
-        transferTransaction.setCard(cardFrom);
-        transferTransaction.setReceiver(cardTo);
-        transferTransaction.setCreatedDate(new Date(Instant.now().toEpochMilli()));
-        transferTransaction.setSuspicious(isTransactionSuspicious(transactionAmount));
-        boolean shouldBeSuccessful = !isAboveLimit(transactionAmount);
+        populateTransaction(transferTransaction, transactionAmount, cardFrom, cardTo);
+        boolean shouldBeSuccessful = !isAboveLimit(transactionAmount) &&
+                suspiciousActivityService.isCustomerAllowedForTransactions(cardFrom.getWallet().getOwner());
         if (shouldBeSuccessful) {
             transferTransaction.setSuccessful(cardService.transferFunds(cardFrom, cardTo, transactionAmount));
         } else transferTransaction.setSuccessful(false);
@@ -81,8 +76,28 @@ public class TransactionService {
         return conversionService.convert(savedTransfer, TransactionDto.class);
     }
 
-    private boolean isTransactionSuspicious(BigDecimal amount) {
+    public int getLastHourSuspiciousTransactionsByCustomer(Customer customer) {
+        return transactionRepository.countAllByCustomerForTheLastHour(customer.getId());
+    }
+
+    private void populateTransaction(Transaction transaction, BigDecimal amount, Card card) {
+        transaction.setAmount(amount);
+        transaction.setCard(card);
+        transaction.setCreatedDate(new Date(Instant.now().toEpochMilli()));
+        transaction.setSuspicious(isTransactionSuspicious(amount, card));
+    }
+
+    private void populateTransaction(Transfer transaction, BigDecimal amount, Card from, Card to) {
+        transaction.setAmount(amount);
+        transaction.setCard(from);
+        transaction.setReceiver(to);
+        transaction.setCreatedDate(new Date(Instant.now().toEpochMilli()));
+        transaction.setSuspicious(isTransactionSuspicious(amount, from));
+    }
+
+    private boolean isTransactionSuspicious(BigDecimal amount, Card card) {
         if (amount.compareTo(BigDecimal.valueOf(10000)) == 1) {
+            suspiciousActivityService.checkSuspiciousActivity(card);
             return true;
         } else return false;
     }

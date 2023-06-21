@@ -34,6 +34,12 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
     }
 
+    @PostMapping("/{id}/unblock")
+    public ResponseEntity<Void> unblockCustomer(@PathVariable Long id) {
+        customerService.unblockCustomer(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CustomerResponseModel> getCustomerById(@PathVariable Long id) {
         CustomerResponseModel responseModel = conversionService.convert(customerService.getCustomerDetailsById(id),

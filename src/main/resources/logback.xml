@@ -15,7 +15,7 @@
         <appender-ref ref="STDOUT"/>
     </root>
 
-    <logger name="ua.svyry.ewallet" level="DEBUG">
-        <appender-ref ref="STDOUT"/>
-    </logger>
+<!--    <logger name="ua.svyry.ewallet" level="DEBUG">-->
+<!--        <appender-ref ref="STDOUT"/>-->
+<!--    </logger>-->
 </configuration>

@@ -47,6 +47,15 @@ public class CustomerService implements UserDetailsService {
         return createdCustomerDetails;
     }
 
+    public void unblockCustomer(Long id) {
+        Customer customer = getCustomerById(id);
+        customer.setBlockedForTransactions(false);
+    }
+
+    public int unblockAllBlocked() {
+        return customerRepository.updateAllBlockedForTransactionsTrue();
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Customer customer = getCustomerByEmail(username);

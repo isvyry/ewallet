@@ -14,6 +14,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             "join wallet w on w.id = c.wallet_id\n" +
             "join customer cus on cus.id = w.id\n" +
             "where cus.id = :customerId and tr.created_date > NOW() - interval '1 hour'", nativeQuery = true)
-    long countAllByCustomerForTheLastHour(@Param("customerId") Long customerId);
+    int countAllByCustomerForTheLastHour(@Param("customerId") Long customerId);
 
 }
