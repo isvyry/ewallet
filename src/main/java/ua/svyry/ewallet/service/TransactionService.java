@@ -5,16 +5,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ua.svyry.ewallet.entity.*;
+import ua.svyry.ewallet.entity.Customer;
+import ua.svyry.ewallet.entity.Card;
+import ua.svyry.ewallet.entity.Transfer;
+import ua.svyry.ewallet.entity.Deposit;
+import ua.svyry.ewallet.entity.Withdrawal;
+import ua.svyry.ewallet.entity.Transaction;
 import ua.svyry.ewallet.repository.DepositRepository;
 import ua.svyry.ewallet.repository.TransactionRepository;
 import ua.svyry.ewallet.repository.TransferRepository;
 import ua.svyry.ewallet.repository.WithdrawalRepository;
-import ua.svyry.ewallet.shared.CustomerDto;
 import ua.svyry.ewallet.shared.TransactionDto;
 
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.Instant;
 import java.util.Date;
 
