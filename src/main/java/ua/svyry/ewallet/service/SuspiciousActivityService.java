@@ -13,8 +13,9 @@ import ua.svyry.ewallet.entity.Customer;
 @Slf4j
 public class SuspiciousActivityService {
 
-    private final CustomerService customerService;
     private final ObjectProvider<TransactionService> transactionService;
+
+    //We have to add 1 so total suspicious transaction count would be count() from DB + current suspicious transaction
     public void checkSuspiciousActivity(Card card) {
         Customer owner = card.getWallet().getOwner();
         int lastHourSuspiciousTransactions = transactionService
