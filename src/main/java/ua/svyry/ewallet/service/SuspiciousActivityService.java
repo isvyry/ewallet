@@ -23,6 +23,7 @@ public class SuspiciousActivityService {
 
         if (lastHourSuspiciousTransactions >= 10) {
             owner.setBlockedForTransactions(true);
+            owner.setSuspicious(true);
         } else if (lastHourSuspiciousTransactions >= 5) {
             owner.setSuspicious(true);
         }

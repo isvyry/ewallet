@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.svyry.ewallet.entity.Customer;
 import ua.svyry.ewallet.entity.Wallet;
 import ua.svyry.ewallet.repository.WalletRepository;
-import ua.svyry.ewallet.shared.WalletDto;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
@@ -24,7 +24,7 @@ public class WalletService {
     public Wallet createWallet(Customer customer) {
         Wallet builtWallet = Wallet.builder()
                 .owner(customer)
-                .createdDate(new Date())
+                .createdDate(new Date(Instant.now().toEpochMilli()))
                 .walletNumber(UUID.randomUUID())
                 .build();
         return walletRepository.save(builtWallet);

@@ -157,7 +157,7 @@ public class CardServiceTest {
 
         Card savedCard = cardCaptor.getValue();
 
-        assertEquals(savedCard.getBalance(), BigDecimal.valueOf(500));
+        assertEquals(BigDecimal.valueOf(500), savedCard.getBalance());
     }
 
     @Test
@@ -177,7 +177,7 @@ public class CardServiceTest {
 
         Card savedCard = cardCaptor.getValue();
 
-        assertEquals(savedCard.getBalance(), BigDecimal.valueOf(4500));
+        assertEquals(BigDecimal.valueOf(4500), savedCard.getBalance());
         assertTrue(result);
     }
 
@@ -223,8 +223,8 @@ public class CardServiceTest {
 
         Card first = savedCards.stream().filter(c -> c.getId().equals(1l)).findFirst().get();
         Card second = savedCards.stream().filter(c -> c.getId().equals(2l)).findFirst().get();
-        assertEquals(first.getBalance(), BigDecimal.valueOf(500));
-        assertEquals(second.getBalance(), BigDecimal.valueOf(1500));
+        assertEquals(BigDecimal.valueOf(500), first.getBalance());
+        assertEquals(BigDecimal.valueOf(1500), second.getBalance());
     }
 
     @Test
