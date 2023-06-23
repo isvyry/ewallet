@@ -11,6 +11,7 @@ import java.util.Optional;
 @Component
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByEmail(String email);
+    boolean existsByEmail(String email);
     @Query("update Customer set isBlockedForTransactions = false where isBlockedForTransactions = true")
     @Modifying(flushAutomatically = true)
     int updateAllBlockedForTransactionsTrue();

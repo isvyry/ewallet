@@ -1,5 +1,6 @@
 package ua.svyry.ewallet.service;
 
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,10 @@ public class CustomerService implements UserDetailsService {
     private final ConversionService conversionService;
 
     public CustomerDto createCustomer(CustomerDto customerDetails) {
+        if (customerRepository.existsByEmail(customerDetails.getEmail())) {
+            throw new EntityExistsException(String.format("Customer with email: '%s' already exists",
+                    customerDetails.getEmail()));
+        }
         Customer customer = conversionService.convert(customerDetails, Customer.class);
 
         customer.setEncryptedPassword(passwordEncoder.encode(customerDetails.getPassword()));
@@ -44,6 +49,11 @@ public class CustomerService implements UserDetailsService {
         CustomerDto createdCustomerDetails = conversionService.convert(savedCustomer, CustomerDto.class);
         createdCustomerDetails.setWalletId(createdWallet.getId());
         createdCustomerDetails.setWalletNumber(createdWallet.getWalletNumber().toString());
+        log.info(String.format("Created customer[id: %s, email: %s, " +
+                "firstName: %s, lastName: %s, walletId: %s, walletNumber: %s]", createdCustomerDetails.getUserId(),
+                createdCustomerDetails.getEmail(), createdCustomerDetails.getFirstName(),
+                createdCustomerDetails.getLastName(), createdCustomerDetails.getWalletId(),
+                createdCustomerDetails.getWalletNumber()));
         return createdCustomerDetails;
     }
 
@@ -55,6 +65,11 @@ public class CustomerService implements UserDetailsService {
         customerRepository.save(customer);
     }
 
+    public CustomerDto updateCustomer(Long id, CustomerDto customerDetails) {
+        Customer customer = getCustomerById(id);
+        return conversionService.convert(customerRepository.save(customer), CustomerDto.class);
+    }
+
     public int unblockAllCustomers() {
         return customerRepository.updateAllBlockedForTransactionsTrue();
     }
@@ -63,7 +78,7 @@ public class CustomerService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Customer customer = getCustomerByEmail(username);
         return new User(customer.getEmail(), customer.getEncryptedPassword(), true,
-                true, true, !customer.isBlockedForTransactions(), new ArrayList<>());
+                true, true, true, new ArrayList<>());
     }
 
     public CustomerDto getUserDetailsByUsername(String username) {

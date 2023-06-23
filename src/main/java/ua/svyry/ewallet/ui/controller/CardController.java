@@ -38,10 +38,10 @@ public class CardController {
     public ResponseEntity<CardResponseModel> getById(@PathVariable Long id) {
         CardResponseModel responseModel = conversionService.convert(cardService.getCardDetailsById(id),
                 CardResponseModel.class);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
+        return ResponseEntity.status(HttpStatus.OK).body(responseModel);
     }
 
-    @GetMapping("/wallet/{walletId}")
+    @GetMapping("/wallets/{walletId}")
     public ResponseEntity<List<CardResponseModel>> getAllByWallet(@PathVariable Long walletId,
                                                                  @RequestParam(defaultValue = "0") Integer pageNumber,
                                                                  @RequestParam(defaultValue = "20") Integer pageSize) {
@@ -52,7 +52,7 @@ public class CardController {
         return ResponseEntity.status(HttpStatus.OK).body(responseModel);
     }
 
-    @GetMapping("/customer/{customerId}")
+    @GetMapping("/customers/{customerId}")
     public ResponseEntity<List<CardResponseModel>> getAllByCustomer(@PathVariable Long customerId,
                                                               @RequestParam(defaultValue = "0") Integer pageNumber,
                                                               @RequestParam(defaultValue = "20") Integer pageSize) {

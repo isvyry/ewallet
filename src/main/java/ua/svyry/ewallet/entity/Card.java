@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Builder;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.envers.AuditOverride;
+import org.hibernate.envers.Audited;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -18,7 +20,9 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class Card {
+@Audited
+@AuditOverride(forClass = Auditable.class)
+public class Card extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -7,6 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.OneToMany;
 import lombok.*;
+import org.hibernate.envers.AuditOverride;
+import org.hibernate.envers.Audited;
 
 import java.util.Date;
 import java.util.List;
@@ -18,7 +20,9 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
-public class Wallet {
+@Audited
+@AuditOverride(forClass = Auditable.class)
+public class Wallet extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

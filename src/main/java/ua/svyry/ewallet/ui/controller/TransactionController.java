@@ -33,7 +33,7 @@ public class TransactionController {
                                                                  createTransactionRequestModel) {
         TransactionDto transactionDetails = conversionService
                 .convert(createTransactionRequestModel, TransactionDto.class);
-        return ResponseEntity.status(HttpStatus.OK).body(conversionService
+        return ResponseEntity.status(HttpStatus.CREATED).body(conversionService
                 .convert(transactionService.depositFunds(transactionDetails), TransactionResult.class));
     }
     @PostMapping("/transfer")
@@ -42,7 +42,7 @@ public class TransactionController {
                                                                   createTransferRequestModel) {
         TransactionDto transactionDetails = conversionService
                 .convert(createTransferRequestModel, TransactionDto.class);
-        return ResponseEntity.status(HttpStatus.OK).body(conversionService
+        return ResponseEntity.status(HttpStatus.CREATED).body(conversionService
                 .convert(transactionService.transferFunds(transactionDetails), TransactionResult.class));
     }
     @PostMapping("/withdraw")
@@ -51,7 +51,7 @@ public class TransactionController {
                                                                   createTransactionRequestModel) {
         TransactionDto transactionDetails = conversionService
                 .convert(createTransactionRequestModel, TransactionDto.class);
-        return ResponseEntity.status(HttpStatus.OK).body(conversionService
+        return ResponseEntity.status(HttpStatus.CREATED).body(conversionService
                 .convert(transactionService.withdrawFunds(transactionDetails), TransactionResult.class));
     }
 

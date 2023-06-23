@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.Builder;
+import org.hibernate.envers.AuditOverride;
+import org.hibernate.envers.Audited;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,7 +19,9 @@ import lombok.Builder;
 @Setter
 @Builder
 @Entity
-public class Customer {
+@Audited
+@AuditOverride(forClass = Auditable.class)
+public class Customer extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

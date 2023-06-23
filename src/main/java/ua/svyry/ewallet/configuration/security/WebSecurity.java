@@ -29,13 +29,8 @@ public class WebSecurity {
     @Bean
     protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
 
-//        AuthenticationManagerBuilder managerBuilder = httpSecurity.getSharedObject(AuthenticationManagerBuilder.class);
-//        managerBuilder.userDetailsService(userService).passwordEncoder(passwordEncoder);
-//
-//        AuthenticationManager authenticationManager = managerBuilder.build();
-
         return httpSecurity.csrf().disable().authorizeHttpRequests()
-                .requestMatchers(HttpMethod.POST,  "/customers").permitAll()
+                .requestMatchers(HttpMethod.POST,  "/customers", "/login").permitAll()
                 .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated()

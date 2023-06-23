@@ -1,6 +1,7 @@
 package ua.svyry.ewallet.ui.controller.advice;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.AuthenticationException;
@@ -16,6 +17,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @RestControllerAdvice
@@ -27,6 +29,17 @@ public class ControllerAdvice {
         return ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(NOT_FOUND.value())
+                .error(exception.getMessage())
+                .path(request.getRequestURI())
+                .build();
+    }
+
+    @ExceptionHandler(EntityExistsException.class)
+    @ResponseStatus(CONFLICT)
+    public ErrorResponse entityExistsException(HttpServletRequest request, EntityExistsException exception) {
+        return ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(CONFLICT.value())
                 .error(exception.getMessage())
                 .path(request.getRequestURI())
                 .build();

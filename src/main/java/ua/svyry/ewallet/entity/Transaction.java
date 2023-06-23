@@ -12,6 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.envers.AuditOverride;
+import org.hibernate.envers.Audited;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -22,7 +24,9 @@ import java.util.Date;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Transaction {
+@Audited
+@AuditOverride(forClass = Auditable.class)
+public class Transaction extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;

@@ -8,17 +8,18 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 import ua.svyry.ewallet.entity.Customer;
 import ua.svyry.ewallet.entity.Wallet;
 import ua.svyry.ewallet.repository.WalletRepository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -26,8 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class WalletServiceTest {
 
     WalletRepository walletRepository = mock(WalletRepository.class);
-    ConversionService conversionService = mock(ConversionService.class);
-    WalletService service = new WalletService(walletRepository, conversionService);
+    WalletService service = new WalletService(walletRepository);
 
     @Captor
     ArgumentCaptor<Wallet> walletCaptor;
@@ -37,14 +37,21 @@ public class WalletServiceTest {
     public void testCreateWallet() {
 
         Customer customer = Customer.builder().id(1l).build();
+        Wallet wallet = Wallet.builder()
+                .id(1l)
+                .walletNumber(UUID.randomUUID())
+                .owner(customer)
+                .build();
+
+        when(walletRepository.save(any())).thenReturn(wallet);
 
         service.createWallet(customer);
 
         verify(walletRepository, times(1)).save(walletCaptor.capture());
 
-        Wallet wallet = walletCaptor.getValue();
+        Wallet capturedWallet = walletCaptor.getValue();
 
-        assertEquals(customer, wallet.getOwner());
+        assertEquals(customer, capturedWallet.getOwner());
     }
 
     @Test

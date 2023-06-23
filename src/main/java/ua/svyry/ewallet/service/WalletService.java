@@ -2,7 +2,7 @@ package ua.svyry.ewallet.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.svyry.ewallet.entity.Customer;
@@ -16,18 +16,21 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class WalletService {
 
     private final WalletRepository walletRepository;
-    private final ConversionService conversionService;
-
     public Wallet createWallet(Customer customer) {
         Wallet builtWallet = Wallet.builder()
                 .owner(customer)
                 .createdDate(new Date(Instant.now().toEpochMilli()))
                 .walletNumber(UUID.randomUUID())
                 .build();
-        return walletRepository.save(builtWallet);
+        Wallet savedWallet = walletRepository.save(builtWallet);
+        log.info(String.format("Created wallet[id: %s, number: %s, " +
+        "ownerId: %s]", savedWallet.getId(),
+                savedWallet.getWalletNumber().toString(), savedWallet.getOwner().getId()));
+        return savedWallet;
     }
 
     public Wallet getById(Long id) {
