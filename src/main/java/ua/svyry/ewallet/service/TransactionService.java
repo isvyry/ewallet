@@ -86,7 +86,6 @@ public class TransactionService {
     private void populateTransaction(Transaction transaction, BigDecimal amount, Card card) {
         transaction.setAmount(amount);
         transaction.setCard(card);
-        transaction.setCreatedDate(new Date(Instant.now().toEpochMilli()));
         transaction.setSuspicious(isTransactionSuspicious(amount, card));
     }
 
@@ -94,7 +93,6 @@ public class TransactionService {
         transaction.setAmount(amount);
         transaction.setCard(from);
         transaction.setReceiver(to);
-        transaction.setCreatedDate(new Date(Instant.now().toEpochMilli()));
         transaction.setSuspicious(isTransactionSuspicious(amount, from));
     }
 

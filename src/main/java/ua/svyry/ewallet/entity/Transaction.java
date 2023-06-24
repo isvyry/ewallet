@@ -32,7 +32,6 @@ public class Transaction extends Auditable {
     protected Long id;
     protected BigDecimal amount;
     protected boolean isSuspicious;
-    protected Date createdDate;
     @ManyToOne
     protected Card card;
 

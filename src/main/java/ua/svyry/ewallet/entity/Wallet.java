@@ -32,6 +32,5 @@ public class Wallet extends Auditable {
     private Customer owner;
     @OneToMany(mappedBy = "wallet")
     private List<Card> cards;
-    private Date createdDate;
 
 }

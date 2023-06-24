@@ -23,7 +23,6 @@ public class WalletService {
     public Wallet createWallet(Customer customer) {
         Wallet builtWallet = Wallet.builder()
                 .owner(customer)
-                .createdDate(new Date(Instant.now().toEpochMilli()))
                 .walletNumber(UUID.randomUUID())
                 .build();
         Wallet savedWallet = walletRepository.save(builtWallet);
