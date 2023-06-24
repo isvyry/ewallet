@@ -9,8 +9,6 @@ import ua.svyry.ewallet.entity.Customer;
 import ua.svyry.ewallet.entity.Wallet;
 import ua.svyry.ewallet.repository.WalletRepository;
 
-import java.time.Instant;
-import java.util.Date;
 import java.util.UUID;
 
 @Service

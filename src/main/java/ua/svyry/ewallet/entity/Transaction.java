@@ -11,12 +11,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.envers.AuditOverride;
 import org.hibernate.envers.Audited;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 @DiscriminatorColumn(name = "transaction_type", discriminatorType = DiscriminatorType.STRING)
 @Entity

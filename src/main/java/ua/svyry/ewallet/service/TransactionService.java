@@ -18,8 +18,6 @@ import ua.svyry.ewallet.repository.WithdrawalRepository;
 import ua.svyry.ewallet.shared.TransactionDto;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Date;
 
 @Service
 @RequiredArgsConstructor

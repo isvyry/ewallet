@@ -6,11 +6,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.OneToMany;
-import lombok.*;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.Builder;
 import org.hibernate.envers.AuditOverride;
 import org.hibernate.envers.Audited;
 
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
