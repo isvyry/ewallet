@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+    <changeSet  id="1"  author="isvyry">
+        <addUniqueConstraint columnNames="id,rev"
+                             constraintName="id_rev_uq_constraint"
+                             tableName="customer_aud"/>
+    </changeSet>
+
+    <changeSet  id="2"  author="isvyry">
+        <addForeignKeyConstraint  baseColumnNames="rev"
+                                  baseTableName="customer_aud"
+                                  constraintName="fk_customer_aud_rev_revinfo_rev"
+                                  referencedColumnNames="rev"
+                                  referencedTableName="revinfo"/>
+    </changeSet>
+</databaseChangeLog>

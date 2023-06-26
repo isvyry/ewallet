@@ -11,4 +11,18 @@
     <include file="db/changelog/card-alter-001.xml" />
     <include file="db/changelog/transaction-alter-001.xml" />
 
+    <include file="db/changelog/revinfo-create-001.xml" />
+    <include file="db/changelog/revinfo-alter-001.xml" />
+
+    <include file="db/changelog/customer_aud-create-001.xml" />
+    <include file="db/changelog/customer_aud-alter-001.xml" />
+    <include file="db/changelog/wallet_aud-create-001.xml" />
+    <include file="db/changelog/wallet_aud-alter-001.xml" />
+    <include file="db/changelog/card_aud-create-001.xml" />
+    <include file="db/changelog/card_aud-alter-001.xml" />
+    <include file="db/changelog/transaction_aud-create-001.xml" />
+    <include file="db/changelog/transaction_aud-alter-001.xml" />
+
+    <include file="db/changelog/quartz-tables-init.xml"/>
+
 </databaseChangeLog>
