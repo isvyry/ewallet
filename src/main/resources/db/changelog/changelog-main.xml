@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <include file="db/changelog/customer-create-001.xml" />
+    <include file="db/changelog/wallet-create-001.xml" />
+    <include file="db/changelog/card-create-001.xml" />
+    <include file="db/changelog/transaction-create-001.xml" />
+    <include file="db/changelog/customer-alter-001.xml" />
+    <include file="db/changelog/wallet-alter-001.xml" />
+    <include file="db/changelog/card-alter-001.xml" />
+    <include file="db/changelog/transaction-alter-001.xml" />
+
+</databaseChangeLog>

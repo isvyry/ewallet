@@ -35,6 +35,6 @@ public class Card extends Auditable {
     private boolean isDeleted;
     @OneToMany(mappedBy = "card")
     private List<Transaction> cardTransactions;
-    @OneToMany(mappedBy = "receiver")
+    @OneToMany(mappedBy = "receiverCard")
     private List<Transfer> receivedTransfers;
 }

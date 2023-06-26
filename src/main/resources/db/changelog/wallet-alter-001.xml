@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+    <changeSet  id="1"  author="isvyry">
+        <addForeignKeyConstraint  baseColumnNames="owner_id"
+                                  baseTableName="wallet"
+                                  constraintName="fk_wallet_owner_id_customer_id"
+                                  referencedColumnNames="id"
+                                  referencedTableName="customer"/>
+    </changeSet>
+
+    <changeSet  id="2"  author="isvyry">
+        <addUniqueConstraint  columnNames="wallet_number"
+                              constraintName="wallet_number_uq_constraint"
+                              tableName="wallet"/>
+    </changeSet>
+
+    <changeSet  id="3"  author="isvyry">
+        <sql>
+            create sequence public.wallet_id_seq;
+
+            alter sequence public.wallet_id_seq owner to postgres;
+
+            alter sequence public.wallet_id_seq owned by public.wallet.id;
+        </sql>
+        <rollback>
+            <sql>
+                drop sequence public.wallet_id_seq;
+            </sql>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

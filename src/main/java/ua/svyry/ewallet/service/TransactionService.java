@@ -90,7 +90,7 @@ public class TransactionService {
     private void populateTransaction(Transfer transaction, BigDecimal amount, Card from, Card to) {
         transaction.setAmount(amount);
         transaction.setCard(from);
-        transaction.setReceiver(to);
+        transaction.setReceiverCard(to);
         transaction.setSuspicious(isTransactionSuspicious(amount, from));
     }
 

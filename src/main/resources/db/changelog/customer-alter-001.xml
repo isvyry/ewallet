@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+    <changeSet  id="1"  author="isvyry">
+        <addUniqueConstraint columnNames="email"
+                              constraintName="email_uq_constraint"
+                              tableName="customer"/>
+    </changeSet>
+
+    <changeSet  id="2"  author="isvyry">
+        <sql>
+            create sequence public.customer_id_seq;
+
+            alter sequence public.customer_id_seq owner to postgres;
+
+            alter sequence public.customer_id_seq owned by public.customer.id;
+        </sql>
+        <rollback>
+            <sql>
+                drop sequence public.customer_id_seq;
+            </sql>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

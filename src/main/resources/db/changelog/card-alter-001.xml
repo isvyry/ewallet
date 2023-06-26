@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+    <changeSet  id="1"  author="isvyry">
+        <addForeignKeyConstraint  baseColumnNames="wallet_id"
+                                  baseTableName="card"
+                                  constraintName="fk_card_wallet_id_wallet_id"
+                                  referencedColumnNames="id"
+                                  referencedTableName="wallet"/>
+    </changeSet>
+
+    <changeSet  id="2"  author="isvyry">
+        <addUniqueConstraint  columnNames="card_number"
+                              constraintName="card_number_uq_constraint"
+                              tableName="card"/>
+    </changeSet>
+
+    <changeSet  id="3"  author="isvyry">
+        <sql>
+            create sequence public.card_id_seq;
+
+            alter sequence public.card_id_seq owner to postgres;
+
+            alter sequence public.card_id_seq owned by public.card.id;
+        </sql>
+        <rollback>
+            <sql>
+                drop sequence public.card_id_seq;
+            </sql>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

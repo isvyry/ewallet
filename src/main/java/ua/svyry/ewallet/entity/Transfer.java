@@ -21,6 +21,6 @@ import org.hibernate.envers.Audited;
 public class Transfer extends Transaction {
 
     @ManyToOne
-    private Card receiver;
+    private Card receiverCard;
 
 }

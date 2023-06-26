@@ -359,7 +359,7 @@ public class TransactionServiceTest {
         Transfer savedResult = transferCaptor.getValue();
 
         assertEquals(card1, savedResult.getCard());
-        assertEquals(card2, savedResult.getReceiver());
+        assertEquals(card2, savedResult.getReceiverCard());
         assertEquals(BigDecimal.valueOf(500), savedResult.getAmount());
         assertTrue(savedResult.isSuccessful());
         assertFalse(savedResult.isSuspicious());
@@ -403,7 +403,7 @@ public class TransactionServiceTest {
         Transfer savedResult = transferCaptor.getValue();
 
         assertEquals(card1, savedResult.getCard());
-        assertEquals(card2, savedResult.getReceiver());
+        assertEquals(card2, savedResult.getReceiverCard());
         assertEquals(BigDecimal.valueOf(2500), savedResult.getAmount());
         assertFalse(savedResult.isSuccessful());
         assertFalse(savedResult.isSuspicious());
@@ -447,7 +447,7 @@ public class TransactionServiceTest {
         Transfer savedResult = transferCaptor.getValue();
 
         assertEquals(card1, savedResult.getCard());
-        assertEquals(card2, savedResult.getReceiver());
+        assertEquals(card2, savedResult.getReceiverCard());
         assertEquals(BigDecimal.valueOf(15000), savedResult.getAmount());
         assertFalse(savedResult.isSuccessful());
         assertTrue(savedResult.isSuspicious());
@@ -491,7 +491,7 @@ public class TransactionServiceTest {
         Transfer savedResult = transferCaptor.getValue();
 
         assertEquals(card1, savedResult.getCard());
-        assertEquals(card2, savedResult.getReceiver());
+        assertEquals(card2, savedResult.getReceiverCard());
         assertEquals(BigDecimal.valueOf(500), savedResult.getAmount());
         assertFalse(savedResult.isSuccessful());
         assertFalse(savedResult.isSuspicious());
