@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ua.svyry.ewallet.exception.DeletedEntityException;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.GONE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @RestControllerAdvice
@@ -68,6 +70,17 @@ public class ControllerAdvice {
         return ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(UNAUTHORIZED.value())
+                .error(exception.getMessage())
+                .path(request.getRequestURI())
+                .build();
+    }
+
+    @ExceptionHandler(DeletedEntityException.class)
+    @ResponseStatus(GONE)
+    public ErrorResponse deletedEntityException(HttpServletRequest request, DeletedEntityException exception) {
+        return ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(GONE.value())
                 .error(exception.getMessage())
                 .path(request.getRequestURI())
                 .build();

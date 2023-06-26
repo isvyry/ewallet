@@ -1,22 +1,28 @@
-version: '2'
-
+version: '3.8'
 services:
-  app:
-    image: 'ewallet:latest'
-    build:
-      context: .
-    container_name: ewallet
+  db:
+    image: 'postgres:latest'
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  eWallet:
+    build: .
+    restart: always
+    ports:
+      - 8080:8080
     depends_on:
       - db
     environment:
-      - DATABASE_URL=jdbc:postgresql://localhost:5432/ewallet
+      - DATABASE_URL=jdbc:postgresql://db:5432/ewallet
       - DATABASE_USERNAME=postgres
       - DATABASE_PASSWORD=12345
       - SECRET=TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ65d1gdfd651fIDFBiondf
+      # Add any additional environment variables here
+    command: bash -c "liquibase --changeLogFile=db/changelog/db.changelog-master.xml --url=jdbc:postgresql://db:5432/your_database_name --username=your_postgres_user --password=your_postgres_password update && exec catalina.sh run"
 
-  db:
-    image: 'postgres:latest'
-    container_name: db
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=12345
+volumes:
+  postgres-data:

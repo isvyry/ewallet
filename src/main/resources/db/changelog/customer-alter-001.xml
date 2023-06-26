@@ -29,4 +29,11 @@
             </sql>
         </rollback>
     </changeSet>
+
+    <changeSet id="3"  author="isvyry">
+        <addDefaultValue  columnDataType="bigint"
+                          columnName="id"
+                          defaultValueSequenceNext="customer_id_seq"
+                          tableName="customer"/>
+    </changeSet>
 </databaseChangeLog>

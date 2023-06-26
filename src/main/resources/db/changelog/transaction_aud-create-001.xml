@@ -10,7 +10,7 @@
         http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
 
     <changeSet  id="1"  author="isvyry">
-        <createTable  tableName="transaction">
+        <createTable  tableName="transaction_aud">
             <column  name="id"  type="bigint">
                 <constraints  primaryKey="true"  nullable="false"/>
             </column>

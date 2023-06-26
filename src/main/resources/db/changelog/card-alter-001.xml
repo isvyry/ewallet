@@ -37,4 +37,11 @@
             </sql>
         </rollback>
     </changeSet>
+
+    <changeSet id="4"  author="isvyry">
+        <addDefaultValue  columnDataType="bigint"
+                          columnName="id"
+                          defaultValueSequenceNext="card_id_seq"
+                          tableName="card"/>
+    </changeSet>
 </databaseChangeLog>

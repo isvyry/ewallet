@@ -37,4 +37,11 @@
             </sql>
         </rollback>
     </changeSet>
+
+    <changeSet id="4"  author="isvyry">
+        <addDefaultValue  columnDataType="bigint"
+                          columnName="id"
+                          defaultValueSequenceNext="wallet_id_seq"
+                          tableName="wallet"/>
+    </changeSet>
 </databaseChangeLog>

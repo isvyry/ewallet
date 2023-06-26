@@ -78,7 +78,7 @@ public class TransactionService {
     }
 
     public int getLastHourSuspiciousTransactionsByCustomer(Customer customer) {
-        return transactionRepository.countAllByCustomerForTheLastHour(customer.getId());
+        return transactionRepository.countAllSuspiciousByCustomerForTheLastHour(customer.getId());
     }
 
     private void populateTransaction(Transaction transaction, BigDecimal amount, Card card) {

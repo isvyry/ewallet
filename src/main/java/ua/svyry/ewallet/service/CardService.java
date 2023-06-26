@@ -1,5 +1,6 @@
 package ua.svyry.ewallet.service;
 
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,10 @@ public class CardService {
     private final ConversionService conversionService;
 
     public CardDto createCard(CardDto cardDetails) {
+        if (cardRepository.existsByCardNumberAndDeletedFalse(cardDetails.getCardNumber())) {
+            throw new EntityExistsException(String.format("Card with number: '%s' already exists",
+                    cardDetails.getCardNumber()));
+        }
         Card builtCard = conversionService.convert(cardDetails, Card.class);
         builtCard.setWallet(walletService.getById(cardDetails.getWalletId()));
         Card savedCard = cardRepository.save(builtCard);

@@ -502,11 +502,11 @@ public class TransactionServiceTest {
     public void testGetLastHourSuspiciousTransactionsByCustomer() {
         Customer customer = Customer.builder().id(1l).build();
 
-        when(transactionRepository.countAllByCustomerForTheLastHour(1l)).thenReturn(5);
+        when(transactionRepository.countAllSuspiciousByCustomerForTheLastHour(1l)).thenReturn(5);
 
         int result = service.getLastHourSuspiciousTransactionsByCustomer(customer);
 
-        verify(transactionRepository, times(1)).countAllByCustomerForTheLastHour(1l);
+        verify(transactionRepository, times(1)).countAllSuspiciousByCustomerForTheLastHour(1l);
         assertEquals(5, result);
     }
 }

@@ -11,7 +11,7 @@
 
     <changeSet  id="1"  author="isvyry">
         <addUniqueConstraint columnNames="id,rev"
-                             constraintName="id_rev_uq_constraint"
+                             constraintName="customer_aud_id_rev_uq_constraint"
                              tableName="customer_aud"/>
     </changeSet>
 

@@ -39,4 +39,11 @@
             </sql>
         </rollback>
     </changeSet>
+
+    <changeSet id="4"  author="isvyry">
+        <addDefaultValue  columnDataType="bigint"
+                          columnName="id"
+                          defaultValueSequenceNext="transaction_id_seq"
+                          tableName="transaction"/>
+    </changeSet>
 </databaseChangeLog>
