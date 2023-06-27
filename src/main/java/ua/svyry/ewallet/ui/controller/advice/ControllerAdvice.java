@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ua.svyry.ewallet.exception.DeletedEntityException;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
@@ -60,6 +61,17 @@ public class ControllerAdvice {
                                 String.format("%s[Field: %s; rejected value: '%s']",
                                         e.getDefaultMessage(), e.getField(), e.getRejectedValue()))
                         .collect(Collectors.joining(", ")))
+                .path(request.getRequestURI())
+                .build();
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(FORBIDDEN)
+    public ErrorResponse accessDeniedException(HttpServletRequest request, AccessDeniedException exception) {
+        return ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(FORBIDDEN.value())
+                .error(exception.getMessage())
                 .path(request.getRequestURI())
                 .build();
     }

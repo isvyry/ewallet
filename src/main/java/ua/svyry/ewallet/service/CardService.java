@@ -29,7 +29,7 @@ public class CardService {
     private final ConversionService conversionService;
 
     public CardDto createCard(CardDto cardDetails) {
-        if (cardRepository.existsByCardNumberAndDeletedFalse(cardDetails.getCardNumber())) {
+        if (cardRepository.existsByCardNumberAndIsDeletedIsFalse(cardDetails.getCardNumber())) {
             throw new EntityExistsException(String.format("Card with number: '%s' already exists",
                     cardDetails.getCardNumber()));
         }

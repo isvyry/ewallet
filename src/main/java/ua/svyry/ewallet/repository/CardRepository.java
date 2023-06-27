@@ -10,5 +10,5 @@ import ua.svyry.ewallet.entity.Wallet;
 @Component
 public interface CardRepository extends JpaRepository<Card, Long> {
     Page<Card> findAllByWallet(Wallet wallet, Pageable pageable);
-    boolean existsByCardNumberAndDeletedFalse(String cardNumber);
+    boolean existsByCardNumberAndIsDeletedIsFalse(String cardNumber);
 }

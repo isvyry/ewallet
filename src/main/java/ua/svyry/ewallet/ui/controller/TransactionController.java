@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ua.svyry.ewallet.service.AuthenticationRetrieverFacade;
 import ua.svyry.ewallet.service.TransactionService;
 import ua.svyry.ewallet.shared.TransactionDto;
 import ua.svyry.ewallet.ui.model.CreateTransactionRequestModel;
@@ -26,6 +27,7 @@ public class TransactionController {
 
     private final TransactionService transactionService;
     private final ConversionService conversionService;
+    private final AuthenticationRetrieverFacade authenticationRetrieverFacade;
 
     @PostMapping("/deposit")
     public ResponseEntity<TransactionResult> deposit(@RequestBody @Valid
@@ -34,7 +36,8 @@ public class TransactionController {
         TransactionDto transactionDetails = conversionService
                 .convert(createTransactionRequestModel, TransactionDto.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(conversionService
-                .convert(transactionService.depositFunds(transactionDetails), TransactionResult.class));
+                .convert(transactionService.depositFunds(transactionDetails,
+                        authenticationRetrieverFacade.getAuthentication()), TransactionResult.class));
     }
     @PostMapping("/transfer")
     public ResponseEntity<TransactionResult> transfer(@RequestBody @Valid
@@ -43,7 +46,8 @@ public class TransactionController {
         TransactionDto transactionDetails = conversionService
                 .convert(createTransferRequestModel, TransactionDto.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(conversionService
-                .convert(transactionService.transferFunds(transactionDetails), TransactionResult.class));
+                .convert(transactionService.transferFunds(transactionDetails,
+                        authenticationRetrieverFacade.getAuthentication()), TransactionResult.class));
     }
     @PostMapping("/withdraw")
     public ResponseEntity<TransactionResult> withdraw(@RequestBody @Valid
@@ -52,7 +56,8 @@ public class TransactionController {
         TransactionDto transactionDetails = conversionService
                 .convert(createTransactionRequestModel, TransactionDto.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(conversionService
-                .convert(transactionService.withdrawFunds(transactionDetails), TransactionResult.class));
+                .convert(transactionService.withdrawFunds(transactionDetails,
+                        authenticationRetrieverFacade.getAuthentication()), TransactionResult.class));
     }
 
     
