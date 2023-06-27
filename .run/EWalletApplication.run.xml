@@ -2,7 +2,7 @@
   <configuration default="false" name="EWalletApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <envs>
       <env name="DATABASE_PASSWORD" value="12345" />
-      <env name="DATABASE_URL" value="jdbc:postgresql://localhost:5432/ewallet" />
+      <env name="DATABASE_URL" value="jdbc:postgresql://localhost:5432/ewallet1" />
       <env name="DATABASE_USERNAME" value="postgres" />
       <env name="SECRET" value="TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ65d1gdfd651fIDFBiondf" />
     </envs>
