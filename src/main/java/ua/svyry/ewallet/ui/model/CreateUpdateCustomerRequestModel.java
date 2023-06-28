@@ -1,9 +1,7 @@
 package ua.svyry.ewallet.ui.model;
 
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -11,7 +9,7 @@ import lombok.AllArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateCustomerRequestModel {
+public class CreateUpdateCustomerRequestModel {
 
     @NotBlank(message = "firstName should be provided")
     private String firstName;

@@ -4,14 +4,15 @@ import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ua.svyry.ewallet.exception.DeletedEntityException;
+import ua.svyry.ewallet.exception.EWalletAccessDeniedException;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,7 @@ import static org.springframework.http.HttpStatus.GONE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @RestControllerAdvice
+@Slf4j
 public class ControllerAdvice {
 
     @ExceptionHandler(EntityNotFoundException.class)
@@ -65,9 +67,9 @@ public class ControllerAdvice {
                 .build();
     }
 
-    @ExceptionHandler(AccessDeniedException.class)
+    @ExceptionHandler(EWalletAccessDeniedException.class)
     @ResponseStatus(FORBIDDEN)
-    public ErrorResponse accessDeniedException(HttpServletRequest request, AccessDeniedException exception) {
+    public ErrorResponse accessDeniedException(HttpServletRequest request, EWalletAccessDeniedException exception) {
         return ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(FORBIDDEN.value())

@@ -11,9 +11,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import ua.svyry.ewallet.service.AuthenticationUtil;
 import ua.svyry.ewallet.service.CardService;
 import ua.svyry.ewallet.shared.CardDto;
 import ua.svyry.ewallet.ui.controller.CardController;
@@ -46,6 +49,8 @@ public class CardControllerTest {
     @MockBean
     CardService cardService;
     @MockBean
+    AuthenticationUtil authenticationUtil;
+    @MockBean
     FormattingConversionService conversionService;
 
     @Test
@@ -65,8 +70,11 @@ public class CardControllerTest {
                 .expirationDate(expirationDate)
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email@gmail.com", "");
+
+        when(authenticationUtil.getAuthentication()).thenReturn(auth);
         when(conversionService.convert(requestModel, CardDto.class)).thenReturn(cardDto);
-        when(cardService.createCard(cardDto)).thenReturn(cardDto);
+        when(cardService.createCard(cardDto, auth)).thenReturn(cardDto);
         when(conversionService.convert(cardDto, CardResponseModel.class)).thenReturn(responseModel);
 
         CardResponseModel result =  readAsCardResponseModel(mockMvc
@@ -83,7 +91,7 @@ public class CardControllerTest {
         assertEquals(expirationDate, result.getExpirationDate());
         assertEquals(walletId, result.getWalletId());
 
-        verify(cardService, times(1)).createCard(cardDto);
+        verify(cardService, times(1)).createCard(cardDto, auth);
         verify(conversionService, times(2)).convert(any(), (Class<Object>) any());
     }
 
@@ -210,12 +218,17 @@ public class CardControllerTest {
     public void testDeleteCard() throws Exception {
         Long cardId = 1l;
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email@gmail.com", "");
+
+        when(authenticationUtil.getAuthentication()).thenReturn(auth);
+
         mockMvc.perform(delete("/cards/" + cardId)
                         .with(csrf()))
                 .andExpect(status().isNoContent());
 
 
-        verify(cardService, times(1)).deleteCard(cardId);;
+        verify(cardService, times(1)).deleteCard(cardId, auth);
+        verify(authenticationUtil, times(1)).getAuthentication();
     }
 
     private String asJsonString(final Object obj) {

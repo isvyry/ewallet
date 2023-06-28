@@ -1,5 +1,6 @@
 package ua.svyry.ewallet.service;
 
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import ua.svyry.ewallet.entity.Card;
 import ua.svyry.ewallet.entity.Customer;
 import ua.svyry.ewallet.entity.Wallet;
@@ -43,14 +46,17 @@ public class CardServiceTest {
     CardRepository cardRepository = mock(CardRepository.class);
     WalletService walletService = mock(WalletService.class);
     ConversionService conversionService = mock(ConversionService.class);
-    CardService service = new CardService(cardRepository, walletService, conversionService);
+    CustomerService customerService = mock(CustomerService.class);
+    AuthenticationUtil authenticationUtil = mock(AuthenticationUtil.class);
+    CardService service = new CardService(cardRepository, walletService,customerService, conversionService, authenticationUtil);
 
     @Captor
     ArgumentCaptor<Card> cardCaptor;
 
     @Test
     @DisplayName("createCard() should create card successfully")
-    public void testCreateCard() {
+    public void testCreateCardSuccessful() {
+        Long walletId = 1l;
 
         CardDto cardDetails = CardDto.builder()
                 .balance(new BigDecimal(500))
@@ -59,17 +65,69 @@ public class CardServiceTest {
                 .walletId(1l)
                 .build();
 
-        Card card = Card.builder().build();
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+        Customer customer = Customer.builder().build();
+        Card card = Card.builder()
+                .wallet(Wallet
+                        .builder()
+                        .id(walletId)
+                        .owner(customer)
+                        .build())
+                .build();
 
         when(conversionService.convert(cardDetails, Card.class)).thenReturn(card);
+        when(customerService.getCustomerByWalletId(walletId)).thenReturn(customer);
         when(cardRepository.save(card)).thenReturn(card);
+        when(cardRepository.existsByCardNumberAndIsDeletedIsFalse(any())).thenReturn(false);
 
-        service.createCard(cardDetails);
+        service.createCard(cardDetails, auth);
 
+        verify(customerService, times(1)).getCustomerByWalletId(walletId);
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(cardRepository, times(1)).save(any());
+        verify(cardRepository, times(1)).existsByCardNumberAndIsDeletedIsFalse(any());
         verify(walletService, times(1)).getById(1l);
         verify(conversionService, times(1)).convert(cardDetails, Card.class);
         verify(conversionService, times(1)).convert(card, CardDto.class);
+    }
+
+    @Test
+    @DisplayName("createCard() should throw an exception id card with given number exists")
+    public void testCreateCardException() {
+        Long walletId = 1l;
+        CardDto cardDetails = CardDto.builder()
+                .balance(new BigDecimal(500))
+                .expirationDate(new Date(Instant.now().plus(Period.ofWeeks(10)).toEpochMilli()))
+                .cardNumber("1111222233334444")
+                .walletId(1l)
+                .build();
+
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+        Customer customer = Customer.builder().build();
+        Card card = Card.builder()
+                .wallet(Wallet
+                        .builder()
+                        .id(walletId)
+                        .owner(customer)
+                        .build())
+                .build();
+
+        when(conversionService.convert(cardDetails, Card.class)).thenReturn(card);
+        when(customerService.getCustomerByWalletId(walletId)).thenReturn(customer);
+        when(cardRepository.save(card)).thenReturn(card);
+        when(cardRepository.existsByCardNumberAndIsDeletedIsFalse(any())).thenReturn(true);
+
+        Executable exec = () -> service.createCard(cardDetails, auth);
+
+        assertThrows(EntityExistsException.class, exec);
+
+        verify(customerService, times(1)).getCustomerByWalletId(walletId);
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
+        verify(cardRepository, times(0)).save(any());
+        verify(cardRepository, times(1)).existsByCardNumberAndIsDeletedIsFalse(any());
+        verify(walletService, times(0)).getById(1l);
+        verify(conversionService, times(0)).convert(cardDetails, Card.class);
+        verify(conversionService, times(0)).convert(card, CardDto.class);
     }
 
     @Test
@@ -122,18 +180,25 @@ public class CardServiceTest {
     @Test
     @DisplayName("deleteCard() should set isDeleted to true")
     public void testDeleteCard() {
-        Long cardId = 1l;
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+        Long cardId = 1l;
+        Customer customer = Customer.builder().build();
         Card card = Card.builder()
-                .id(cardId)
-                .isDeleted(false)
+                .wallet(Wallet
+                        .builder()
+                        .id(1l)
+                        .owner(customer)
+                        .build())
                 .build();
+
 
         when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
 
-        service.deleteCard(cardId);
+        service.deleteCard(cardId, auth);
 
         verify(cardRepository, times(1)).save(cardCaptor.capture());
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
 
         Card savedCard = cardCaptor.getValue();
 

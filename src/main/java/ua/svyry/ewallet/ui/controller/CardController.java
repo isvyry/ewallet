@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.svyry.ewallet.service.AuthenticationUtil;
 import ua.svyry.ewallet.service.CardService;
 import ua.svyry.ewallet.shared.CardDto;
 import ua.svyry.ewallet.ui.model.CreateCardRequestModel;
@@ -24,12 +25,14 @@ public class CardController {
 
     private final CardService cardService;
     private final ConversionService conversionService;
+    private final AuthenticationUtil authenticationUtil;
 
     @PostMapping
     public ResponseEntity<CardResponseModel> createCard(@RequestBody @Valid
                                                                   CreateCardRequestModel cardRequestModel) {
         CardDto request = conversionService.convert(cardRequestModel, CardDto.class);
-        CardResponseModel responseModel = conversionService.convert(cardService.createCard(request),
+        CardResponseModel responseModel = conversionService.convert(cardService.createCard(request,
+                        authenticationUtil.getAuthentication()),
                 CardResponseModel.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
     }
@@ -65,7 +68,7 @@ public class CardController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCard(@PathVariable Long id) {
-        cardService.deleteCard(id);
+        cardService.deleteCard(id, authenticationUtil.getAuthentication());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

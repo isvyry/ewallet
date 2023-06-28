@@ -5,6 +5,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import ua.svyry.ewallet.entity.Card;
 import ua.svyry.ewallet.entity.Customer;
 import ua.svyry.ewallet.entity.Wallet;
@@ -21,7 +23,7 @@ public class SuspiciousActivityServiceTest {
     ObjectProvider<TransactionService> transactionServiceObjectProvider = mock(ObjectProvider.class);
     TransactionService transactionService = mock(TransactionService.class);
 
-    SuspiciousActivityService service = new SuspiciousActivityService(transactionServiceObjectProvider);
+    SuspiciousActivityService service = new SuspiciousActivityService(transactionServiceObjectProvider, 5, 10);
 
     @ParameterizedTest(name = "index: expect customer blocked: {1}, suspicious: {2} when they have {0} suspicious transactions in DB")
     @MethodSource

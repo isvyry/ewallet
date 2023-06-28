@@ -7,6 +7,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import ua.svyry.ewallet.entity.Card;
 import ua.svyry.ewallet.entity.Deposit;
 import ua.svyry.ewallet.entity.Withdrawal;
@@ -41,10 +43,12 @@ public class TransactionServiceTest {
     WithdrawalRepository withdrawalRepository = mock(WithdrawalRepository.class);
     TransferRepository transferRepository = mock(TransferRepository.class);
     TransactionRepository transactionRepository = mock(TransactionRepository.class);
+    AuthenticationUtil authenticationUtil = mock(AuthenticationUtil.class);
 
     TransactionService service = new TransactionService(cardService, conversionService,
-            suspiciousActivityService, depositRepository, withdrawalRepository, transferRepository,
-            transactionRepository);
+            authenticationUtil, suspiciousActivityService, depositRepository, withdrawalRepository,
+            transferRepository, transactionRepository, BigDecimal.valueOf(5000), BigDecimal.valueOf(2000),
+            BigDecimal.valueOf(10000));
 
     @Captor
     ArgumentCaptor<Deposit> depositCaptor;
@@ -59,10 +63,11 @@ public class TransactionServiceTest {
     @DisplayName("depositFunds() should save deposit")
     public void testDepositFunds() {
         Long cardId = 1l;
+        Customer customer = Customer.builder().build();
         Card card = Card.builder()
                 .id(cardId)
                 .balance(BigDecimal.valueOf(1000))
-                .wallet(Wallet.builder().id(1l).owner(new Customer()).build())
+                .wallet(Wallet.builder().id(1l).owner(customer).build())
                 .build();
 
         TransactionDto transactionDetails = TransactionDto.builder()
@@ -70,12 +75,15 @@ public class TransactionServiceTest {
                 .amount(BigDecimal.valueOf(500))
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
         when(cardService.getById(cardId)).thenReturn(card);
         when(suspiciousActivityService.isCustomerAllowedForTransactions(any())).thenReturn(true);
 
-        service.depositFunds(transactionDetails);
+        service.depositFunds(transactionDetails, auth);
 
         verify(cardService, times(1)).depositFunds(card, BigDecimal.valueOf(500));
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(suspiciousActivityService, times(0)).checkSuspiciousActivity(card);
         verify(depositRepository, times(1)).save(depositCaptor.capture());
         verify(conversionService, times(1)).convert(any(), eq(TransactionDto.class));
@@ -92,10 +100,11 @@ public class TransactionServiceTest {
     @DisplayName("depositFunds() should not save deposit above 2000")
     public void testDepositFundsAboveLimit() {
         Long cardId = 1l;
+        Customer customer = Customer.builder().build();
         Card card = Card.builder()
                 .id(cardId)
                 .balance(BigDecimal.valueOf(1000))
-                .wallet(Wallet.builder().id(1l).owner(new Customer()).build())
+                .wallet(Wallet.builder().id(1l).owner(customer).build())
                 .build();
 
         TransactionDto transactionDetails = TransactionDto.builder()
@@ -103,12 +112,15 @@ public class TransactionServiceTest {
                 .amount(BigDecimal.valueOf(2500))
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
         when(cardService.getById(cardId)).thenReturn(card);
         when(suspiciousActivityService.isCustomerAllowedForTransactions(any())).thenReturn(true);
 
-        service.depositFunds(transactionDetails);
+        service.depositFunds(transactionDetails, auth);
 
         verify(cardService, times(0)).depositFunds(card, BigDecimal.valueOf(500));
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(suspiciousActivityService, times(0)).checkSuspiciousActivity(card);
         verify(depositRepository, times(1)).save(depositCaptor.capture());
         verify(conversionService, times(1)).convert(any(), eq(TransactionDto.class));
@@ -125,10 +137,11 @@ public class TransactionServiceTest {
     @DisplayName("depositFunds() should mark transactions as suspicious above 10000")
     public void testDepositFundsSuspicious() {
         Long cardId = 1l;
+        Customer customer = Customer.builder().build();
         Card card = Card.builder()
                 .id(cardId)
                 .balance(BigDecimal.valueOf(1000))
-                .wallet(Wallet.builder().id(1l).owner(new Customer()).build())
+                .wallet(Wallet.builder().id(1l).owner(customer).build())
                 .build();
 
         TransactionDto transactionDetails = TransactionDto.builder()
@@ -136,12 +149,15 @@ public class TransactionServiceTest {
                 .amount(BigDecimal.valueOf(15000))
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
         when(cardService.getById(cardId)).thenReturn(card);
         when(suspiciousActivityService.isCustomerAllowedForTransactions(any())).thenReturn(true);
 
-        service.depositFunds(transactionDetails);
+        service.depositFunds(transactionDetails, auth);
 
         verify(cardService, times(0)).depositFunds(card, BigDecimal.valueOf(500));
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(suspiciousActivityService, times(1)).checkSuspiciousActivity(card);
         verify(depositRepository, times(1)).save(depositCaptor.capture());
         verify(conversionService, times(1)).convert(any(), eq(TransactionDto.class));
@@ -158,10 +174,11 @@ public class TransactionServiceTest {
     @DisplayName("depositFunds() should not save deposit for blocked customer")
     public void testDepositFundsForBlockedCustomer() {
         Long cardId = 1l;
+        Customer customer = Customer.builder().build();
         Card card = Card.builder()
                 .id(cardId)
                 .balance(BigDecimal.valueOf(1000))
-                .wallet(Wallet.builder().id(1l).owner(new Customer()).build())
+                .wallet(Wallet.builder().id(1l).owner(customer).build())
                 .build();
 
         TransactionDto transactionDetails = TransactionDto.builder()
@@ -169,12 +186,15 @@ public class TransactionServiceTest {
                 .amount(BigDecimal.valueOf(500))
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
         when(cardService.getById(cardId)).thenReturn(card);
         when(suspiciousActivityService.isCustomerAllowedForTransactions(any())).thenReturn(false);
 
-        service.depositFunds(transactionDetails);
+        service.depositFunds(transactionDetails, auth);
 
         verify(cardService, times(0)).depositFunds(card, BigDecimal.valueOf(500));
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(suspiciousActivityService, times(0)).checkSuspiciousActivity(card);
         verify(depositRepository, times(1)).save(depositCaptor.capture());
         verify(conversionService, times(1)).convert(any(), eq(TransactionDto.class));
@@ -191,10 +211,11 @@ public class TransactionServiceTest {
     @DisplayName("withdrawFunds() should save withdrawal")
     public void testWithdrawFunds() {
         Long cardId = 1l;
+        Customer customer = Customer.builder().build();
         Card card = Card.builder()
                 .id(cardId)
                 .balance(BigDecimal.valueOf(1000))
-                .wallet(Wallet.builder().id(1l).owner(new Customer()).build())
+                .wallet(Wallet.builder().id(1l).owner(customer).build())
                 .build();
 
         TransactionDto transactionDetails = TransactionDto.builder()
@@ -202,13 +223,16 @@ public class TransactionServiceTest {
                 .amount(BigDecimal.valueOf(500))
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
         when(cardService.getById(cardId)).thenReturn(card);
         when(suspiciousActivityService.isCustomerAllowedForTransactions(any())).thenReturn(true);
         when(cardService.withdrawFunds(card, BigDecimal.valueOf(500))).thenReturn(true);
 
-        service.withdrawFunds(transactionDetails);
+        service.withdrawFunds(transactionDetails, auth);
 
         verify(cardService, times(1)).withdrawFunds(card, BigDecimal.valueOf(500));
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(suspiciousActivityService, times(0)).checkSuspiciousActivity(card);
         verify(withdrawalRepository, times(1)).save(withdrawalCaptor.capture());
         verify(conversionService, times(1)).convert(any(), eq(TransactionDto.class));
@@ -225,10 +249,11 @@ public class TransactionServiceTest {
     @DisplayName("withdrawFunds() should not save withdrawal above 2000")
     public void testWithdrawalFundsAboveLimit() {
         Long cardId = 1l;
+        Customer customer = Customer.builder().build();
         Card card = Card.builder()
                 .id(cardId)
                 .balance(BigDecimal.valueOf(1000))
-                .wallet(Wallet.builder().id(1l).owner(new Customer()).build())
+                .wallet(Wallet.builder().id(1l).owner(customer).build())
                 .build();
 
         TransactionDto transactionDetails = TransactionDto.builder()
@@ -236,12 +261,15 @@ public class TransactionServiceTest {
                 .amount(BigDecimal.valueOf(2500))
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
         when(cardService.getById(cardId)).thenReturn(card);
         when(suspiciousActivityService.isCustomerAllowedForTransactions(any())).thenReturn(true);
 
-        service.withdrawFunds(transactionDetails);
+        service.withdrawFunds(transactionDetails, auth);
 
         verify(cardService, times(0)).withdrawFunds(card, BigDecimal.valueOf(2500));
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(suspiciousActivityService, times(0)).checkSuspiciousActivity(card);
         verify(withdrawalRepository, times(1)).save(withdrawalCaptor.capture());
         verify(conversionService, times(1)).convert(any(), eq(TransactionDto.class));
@@ -258,10 +286,11 @@ public class TransactionServiceTest {
     @DisplayName("withdrawFunds() should mark transactions as suspicious above 10000")
     public void testWithdrawalFundsSuspicious() {
         Long cardId = 1l;
+        Customer customer = Customer.builder().build();
         Card card = Card.builder()
                 .id(cardId)
                 .balance(BigDecimal.valueOf(1000))
-                .wallet(Wallet.builder().id(1l).owner(new Customer()).build())
+                .wallet(Wallet.builder().id(1l).owner(customer).build())
                 .build();
 
         TransactionDto transactionDetails = TransactionDto.builder()
@@ -269,12 +298,15 @@ public class TransactionServiceTest {
                 .amount(BigDecimal.valueOf(15000))
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
         when(cardService.getById(cardId)).thenReturn(card);
         when(suspiciousActivityService.isCustomerAllowedForTransactions(any())).thenReturn(true);
 
-        service.withdrawFunds(transactionDetails);
+        service.withdrawFunds(transactionDetails, auth);
 
         verify(cardService, times(0)).withdrawFunds(card, BigDecimal.valueOf(15000));
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(suspiciousActivityService, times(1)).checkSuspiciousActivity(card);
         verify(withdrawalRepository, times(1)).save(withdrawalCaptor.capture());
         verify(conversionService, times(1)).convert(any(), eq(TransactionDto.class));
@@ -291,10 +323,11 @@ public class TransactionServiceTest {
     @DisplayName("withdrawFunds() should not save withdraw for blocked customer")
     public void testWithdrawFundsForBlockedCustomer() {
         Long cardId = 1l;
+        Customer customer = Customer.builder().build();
         Card card = Card.builder()
                 .id(cardId)
                 .balance(BigDecimal.valueOf(1000))
-                .wallet(Wallet.builder().id(1l).owner(new Customer()).build())
+                .wallet(Wallet.builder().id(1l).owner(customer).build())
                 .build();
 
         TransactionDto transactionDetails = TransactionDto.builder()
@@ -302,12 +335,15 @@ public class TransactionServiceTest {
                 .amount(BigDecimal.valueOf(500))
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
         when(cardService.getById(cardId)).thenReturn(card);
         when(suspiciousActivityService.isCustomerAllowedForTransactions(any())).thenReturn(false);
 
-        service.withdrawFunds(transactionDetails);
+        service.withdrawFunds(transactionDetails, auth);
 
         verify(cardService, times(0)).withdrawFunds(card, BigDecimal.valueOf(500));
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(suspiciousActivityService, times(0)).checkSuspiciousActivity(card);
         verify(withdrawalRepository, times(1)).save(withdrawalCaptor.capture());
         verify(conversionService, times(1)).convert(any(), eq(TransactionDto.class));
@@ -325,10 +361,11 @@ public class TransactionServiceTest {
     public void testTransferFunds() {
         Long card1Id = 1l;
         Long card2Id = 2l;
+        Customer customer = Customer.builder().build();
         Card card1 = Card.builder()
                 .id(card1Id)
                 .balance(BigDecimal.valueOf(1000))
-                .wallet(Wallet.builder().id(1l).owner(new Customer()).build())
+                .wallet(Wallet.builder().id(1l).owner(customer).build())
                 .build();
 
         Card card2 = Card.builder()
@@ -343,14 +380,17 @@ public class TransactionServiceTest {
                 .amount(BigDecimal.valueOf(500))
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
         when(cardService.getById(card1Id)).thenReturn(card1);
         when(cardService.getById(card2Id)).thenReturn(card2);
         when(suspiciousActivityService.isCustomerAllowedForTransactions(any())).thenReturn(true);
         when(cardService.transferFunds(card1, card2, BigDecimal.valueOf(500))).thenReturn(true);
 
-        service.transferFunds(transactionDetails);
+        service.transferFunds(transactionDetails, auth);
 
         verify(cardService, times(1)).transferFunds(card1, card2, BigDecimal.valueOf(500));
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(suspiciousActivityService, times(0)).checkSuspiciousActivity(card1);
         verify(suspiciousActivityService, times(0)).checkSuspiciousActivity(card2);
         verify(transferRepository, times(1)).save(transferCaptor.capture());
@@ -370,10 +410,11 @@ public class TransactionServiceTest {
     public void testTransferFundsAboveLimit() {
         Long card1Id = 1l;
         Long card2Id = 2l;
+        Customer customer = Customer.builder().build();
         Card card1 = Card.builder()
                 .id(card1Id)
                 .balance(BigDecimal.valueOf(1000))
-                .wallet(Wallet.builder().id(1l).owner(new Customer()).build())
+                .wallet(Wallet.builder().id(1l).owner(customer).build())
                 .build();
 
         Card card2 = Card.builder()
@@ -388,13 +429,16 @@ public class TransactionServiceTest {
                 .amount(BigDecimal.valueOf(2500))
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
         when(cardService.getById(card1Id)).thenReturn(card1);
         when(cardService.getById(card2Id)).thenReturn(card2);
         when(suspiciousActivityService.isCustomerAllowedForTransactions(any())).thenReturn(true);
 
-        service.transferFunds(transactionDetails);
+        service.transferFunds(transactionDetails, auth);
 
         verify(cardService, times(0)).transferFunds(card1, card2, BigDecimal.valueOf(2500));
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(suspiciousActivityService, times(0)).checkSuspiciousActivity(card1);
         verify(suspiciousActivityService, times(0)).checkSuspiciousActivity(card2);
         verify(transferRepository, times(1)).save(transferCaptor.capture());
@@ -414,10 +458,11 @@ public class TransactionServiceTest {
     public void testTransferFundsSuspicious() {
         Long card1Id = 1l;
         Long card2Id = 2l;
+        Customer customer = Customer.builder().build();
         Card card1 = Card.builder()
                 .id(card1Id)
                 .balance(BigDecimal.valueOf(1000))
-                .wallet(Wallet.builder().id(1l).owner(new Customer()).build())
+                .wallet(Wallet.builder().id(1l).owner(customer).build())
                 .build();
 
         Card card2 = Card.builder()
@@ -432,15 +477,18 @@ public class TransactionServiceTest {
                 .amount(BigDecimal.valueOf(15000))
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
         when(cardService.getById(card1Id)).thenReturn(card1);
         when(cardService.getById(card2Id)).thenReturn(card2);
         when(suspiciousActivityService.isCustomerAllowedForTransactions(any())).thenReturn(true);
 
-        service.transferFunds(transactionDetails);
+        service.transferFunds(transactionDetails, auth);
 
         verify(cardService, times(0)).transferFunds(card1, card2, BigDecimal.valueOf(15000));
         verify(suspiciousActivityService, times(1)).checkSuspiciousActivity(card1);
         verify(suspiciousActivityService, times(0)).checkSuspiciousActivity(card2);
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(transferRepository, times(1)).save(transferCaptor.capture());
         verify(conversionService, times(1)).convert(any(), eq(TransactionDto.class));
 
@@ -458,10 +506,11 @@ public class TransactionServiceTest {
     public void testTransferFundsForBlockedCustomer() {
         Long card1Id = 1l;
         Long card2Id = 2l;
+        Customer customer = Customer.builder().build();
         Card card1 = Card.builder()
                 .id(card1Id)
                 .balance(BigDecimal.valueOf(1000))
-                .wallet(Wallet.builder().id(1l).owner(new Customer()).build())
+                .wallet(Wallet.builder().id(1l).owner(customer).build())
                 .build();
 
         Card card2 = Card.builder()
@@ -476,13 +525,16 @@ public class TransactionServiceTest {
                 .amount(BigDecimal.valueOf(500))
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
         when(cardService.getById(card1Id)).thenReturn(card1);
         when(cardService.getById(card2Id)).thenReturn(card2);
         when(suspiciousActivityService.isCustomerAllowedForTransactions(any())).thenReturn(false);
 
-        service.transferFunds(transactionDetails);
+        service.transferFunds(transactionDetails, auth);
 
         verify(cardService, times(0)).transferFunds(card1, card2, BigDecimal.valueOf(500));
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(suspiciousActivityService, times(0)).checkSuspiciousActivity(card1);
         verify(suspiciousActivityService, times(0)).checkSuspiciousActivity(card2);
         verify(transferRepository, times(1)).save(transferCaptor.capture());

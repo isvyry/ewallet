@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +17,6 @@ import ua.svyry.ewallet.repository.DepositRepository;
 import ua.svyry.ewallet.repository.TransactionRepository;
 import ua.svyry.ewallet.repository.TransferRepository;
 import ua.svyry.ewallet.repository.WithdrawalRepository;
-import ua.svyry.ewallet.shared.CustomerDto;
 import ua.svyry.ewallet.shared.TransactionDto;
 
 import java.math.BigDecimal;
@@ -31,32 +29,37 @@ public class TransactionService {
 
     private final CardService cardService;
     private final ConversionService conversionService;
-    private final CustomerService customerService;
+    private final AuthenticationUtil authenticationUtil;
     private final SuspiciousActivityService suspiciousActivityService;
     private final DepositRepository depositRepository;
     private final WithdrawalRepository withdrawalRepository;
     private final TransferRepository transferRepository;
     private final TransactionRepository transactionRepository;
     @Value("${transaction.withdrawal.daily.limit:5000}")
-    private BigDecimal dailyWithdrawalLimit;
+    private final BigDecimal dailyWithdrawalLimit;
     @Value("${transaction.limit:2000}")
-    private BigDecimal singleTransactionLimit;
+    private final BigDecimal singleTransactionLimit;
     @Value("${transaction.suspicious.limit:10000}")
-    private BigDecimal transactionSuspiciousAmountLimit;
+    private final BigDecimal transactionSuspiciousAmountLimit;
 
     public TransactionDto depositFunds(TransactionDto transactionDetails, Authentication currentAuthentication) {
         Card card = cardService.getById(transactionDetails.getCardId());
         Customer owner = card.getWallet().getOwner();
-        checkIsCurrentUser(owner, currentAuthentication);
+
+        authenticationUtil.validateCustomerIsCurrentUser(owner, currentAuthentication);
+
         Deposit depositTransaction = new Deposit();
         BigDecimal transactionAmount = transactionDetails.getAmount();
         populateTransaction(depositTransaction, transactionAmount, card);
+
         boolean shouldBeSuccessful = !isAboveLimit(transactionAmount) &&
                 suspiciousActivityService.isCustomerAllowedForTransactions(owner);
+
         if (shouldBeSuccessful) {
             cardService.depositFunds(card, transactionAmount);
             depositTransaction.setSuccessful(true);
         } else depositTransaction.setSuccessful(false);
+
         Deposit savedDeposit = depositRepository.save(depositTransaction);
         return conversionService.convert(savedDeposit, TransactionDto.class);
     }
@@ -64,16 +67,21 @@ public class TransactionService {
     public TransactionDto withdrawFunds(TransactionDto transactionDetails, Authentication currentAuthentication) {
         Card card = cardService.getById(transactionDetails.getCardId());
         Customer owner = card.getWallet().getOwner();
-        checkIsCurrentUser(owner, currentAuthentication);
+
+        authenticationUtil.validateCustomerIsCurrentUser(owner, currentAuthentication);
+
         Withdrawal withdrawalTransaction = new Withdrawal();
         BigDecimal transactionAmount = transactionDetails.getAmount();
         populateTransaction(withdrawalTransaction, transactionAmount, card);
+
         boolean shouldBeSuccessful = !isAboveLimit(transactionAmount) &&
                 suspiciousActivityService.isCustomerAllowedForTransactions(owner) &&
-                !isAboveWithdrawalLimit(owner.getId());
+                !isAboveWithdrawalLimit(owner.getId(), card.getId(), transactionAmount);
+
         if (shouldBeSuccessful) {
             withdrawalTransaction.setSuccessful(cardService.withdrawFunds(card, transactionAmount));
         } else withdrawalTransaction.setSuccessful(false);
+
         Withdrawal savedWithdrawal = withdrawalRepository.save(withdrawalTransaction);
         return conversionService.convert(savedWithdrawal, TransactionDto.class);
     }
@@ -82,29 +90,36 @@ public class TransactionService {
         Card cardFrom = cardService.getById(transactionDetails.getCardId());
         Card cardTo = cardService.getById(transactionDetails.getReceiverCardId());
         Customer owner = cardFrom.getWallet().getOwner();
-        checkIsCurrentUser(owner, currentAuthentication);
+
+        authenticationUtil.validateCustomerIsCurrentUser(owner, currentAuthentication);
+
         Transfer transferTransaction = new Transfer();
         BigDecimal transactionAmount = transactionDetails.getAmount();
         populateTransaction(transferTransaction, transactionAmount, cardFrom, cardTo);
+
         boolean shouldBeSuccessful = !isAboveLimit(transactionAmount) &&
                 suspiciousActivityService.isCustomerAllowedForTransactions(owner);
         if (shouldBeSuccessful) {
             transferTransaction.setSuccessful(cardService.transferFunds(cardFrom, cardTo, transactionAmount));
         } else transferTransaction.setSuccessful(false);
+
         Transfer savedTransfer = transferRepository.save(transferTransaction);
         return conversionService.convert(savedTransfer, TransactionDto.class);
     }
 
-    private void checkIsCurrentUser(Customer cardOwner, Authentication currentUser) {
-        CustomerDto currentUserDetails = customerService.getUserDetailsByUsername((String) currentUser.getPrincipal());
-        if (currentUserDetails.getUserId().equals(cardOwner.getId())) {
-            throw new AccessDeniedException("");
+    private boolean isAboveWithdrawalLimit(Long customerId, Long cardId, BigDecimal transactionAmount) {
+        BigDecimal doneWithdrawalSum = transactionRepository
+                .selectDailyTransactionsAmountSummedUpByCustomerAndByCard(customerId, cardId)
+                .orElse(BigDecimal.ZERO);
+        BigDecimal totalWithdrawalSum = doneWithdrawalSum.add(transactionAmount);
+        if (totalWithdrawalSum.compareTo(dailyWithdrawalLimit) == 1) {
+            log.warn(String.format("Withdrawal is unsuccessful from Card[id = %s]. Today's summed withdrawal amount: %s, " +
+                            "current transaction amount: %s. Daily withdrawal limit: %s", cardId, doneWithdrawalSum,
+                    transactionAmount, dailyWithdrawalLimit));
+            return true;
+        } else {
+            return false;
         }
-    }
-
-    private boolean isAboveWithdrawalLimit(Long customerId) {
-        return transactionRepository.selectDailyTransactionsAmountSummedUpByCustomer(customerId)
-                .compareTo(dailyWithdrawalLimit) == 1;
     }
 
     public int getLastHourSuspiciousTransactionsByCustomer(Customer customer) {

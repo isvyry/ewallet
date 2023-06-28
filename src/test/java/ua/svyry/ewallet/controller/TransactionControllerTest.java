@@ -8,9 +8,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import ua.svyry.ewallet.service.AuthenticationUtil;
 import ua.svyry.ewallet.service.TransactionService;
 import ua.svyry.ewallet.shared.TransactionDto;
 import ua.svyry.ewallet.ui.controller.TransactionController;
@@ -41,6 +44,8 @@ public class TransactionControllerTest {
     @MockBean
     TransactionService transactionService;
     @MockBean
+    AuthenticationUtil authenticationUtil;
+    @MockBean
     FormattingConversionService conversionService;
 
     @Test
@@ -64,8 +69,11 @@ public class TransactionControllerTest {
                 .transactionType("deposit")
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
+        when(authenticationUtil.getAuthentication()).thenReturn(auth);
         when(conversionService.convert(deposit, TransactionDto.class)).thenReturn(transactionDto);
-        when(transactionService.depositFunds(transactionDto)).thenReturn(transactionDto);
+        when(transactionService.depositFunds(transactionDto, auth)).thenReturn(transactionDto);
         when(conversionService.convert(transactionDto, TransactionResult.class)).thenReturn(transactionResult);
 
         TransactionResult result =  readAsTransactionResult(mockMvc
@@ -83,7 +91,8 @@ public class TransactionControllerTest {
         assertTrue(result.isSuccessful());
         assertFalse(result.isSuspicious());
 
-        verify(transactionService, times(1)).depositFunds(transactionDto);
+        verify(authenticationUtil, times(1)).getAuthentication();
+        verify(transactionService, times(1)).depositFunds(transactionDto, auth);
         verify(conversionService, times(2)).convert(any(), (Class<Object>) any());
     }
 
@@ -107,9 +116,11 @@ public class TransactionControllerTest {
                 .isSuspicious(false)
                 .transactionType("withdrawal")
                 .build();
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
 
+        when(authenticationUtil.getAuthentication()).thenReturn(auth);
         when(conversionService.convert(deposit, TransactionDto.class)).thenReturn(transactionDto);
-        when(transactionService.withdrawFunds(transactionDto)).thenReturn(transactionDto);
+        when(transactionService.withdrawFunds(transactionDto, auth)).thenReturn(transactionDto);
         when(conversionService.convert(transactionDto, TransactionResult.class)).thenReturn(transactionResult);
 
         TransactionResult result =  readAsTransactionResult(mockMvc
@@ -127,7 +138,8 @@ public class TransactionControllerTest {
         assertTrue(result.isSuccessful());
         assertFalse(result.isSuspicious());
 
-        verify(transactionService, times(1)).withdrawFunds(transactionDto);
+        verify(authenticationUtil, times(1)).getAuthentication();
+        verify(transactionService, times(1)).withdrawFunds(transactionDto, auth);
         verify(conversionService, times(2)).convert(any(), (Class<Object>) any());
     }
     @Test
@@ -155,8 +167,11 @@ public class TransactionControllerTest {
                 .transactionType("transfer")
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
+        when(authenticationUtil.getAuthentication()).thenReturn(auth);
         when(conversionService.convert(deposit, TransactionDto.class)).thenReturn(transactionDto);
-        when(transactionService.transferFunds(transactionDto)).thenReturn(transactionDto);
+        when(transactionService.transferFunds(transactionDto, auth)).thenReturn(transactionDto);
         when(conversionService.convert(transactionDto, TransactionResult.class)).thenReturn(transactionResult);
 
         TransactionResult result =  readAsTransactionResult(mockMvc
@@ -175,7 +190,8 @@ public class TransactionControllerTest {
         assertTrue(result.isSuccessful());
         assertFalse(result.isSuspicious());
 
-        verify(transactionService, times(1)).transferFunds(transactionDto);
+        verify(authenticationUtil, times(1)).getAuthentication();
+        verify(transactionService, times(1)).transferFunds(transactionDto, auth);
         verify(conversionService, times(2)).convert(any(), (Class<Object>) any());
     }
 

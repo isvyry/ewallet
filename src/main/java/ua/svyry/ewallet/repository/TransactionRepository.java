@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import ua.svyry.ewallet.entity.Transaction;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Component
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
@@ -22,9 +23,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             "join card c on tr.card_id = c.id\n" +
             "join wallet w on w.id = c.wallet_id\n" +
             "join customer cus on cus.id = w.id\n" +
-            "where tr.is_successful is true and tr.created_date > NOW() - interval '1 day'\n" +
+            "where tr.is_successful is true and c.id = :cardId and tr.transaction_type = 'Withdrawal' and tr.created_date > NOW() - interval '1 day'\n" +
             "group by cus.id\n" +
             "having cus.id = :customerId", nativeQuery = true)
-    BigDecimal selectDailyTransactionsAmountSummedUpByCustomer(@Param("customerId") Long customerId);
+    Optional<BigDecimal> selectDailyTransactionsAmountSummedUpByCustomerAndByCard(@Param("customerId") Long customerId,
+                                                                                  @Param("cardId") Long cardId);
 
 }

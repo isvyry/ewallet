@@ -12,13 +12,16 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import ua.svyry.ewallet.service.AuthenticationUtil;
 import ua.svyry.ewallet.service.CustomerService;
 import ua.svyry.ewallet.shared.CustomerDto;
 import ua.svyry.ewallet.ui.controller.CustomerController;
-import ua.svyry.ewallet.ui.model.CreateCustomerRequestModel;
+import ua.svyry.ewallet.ui.model.CreateUpdateCustomerRequestModel;
 import ua.svyry.ewallet.ui.model.CustomerResponseModel;
 
 import java.util.List;
@@ -43,6 +46,8 @@ public class CustomerControllerTest {
     @MockBean
     CustomerService customerService;
     @MockBean
+    AuthenticationUtil authenticationUtil;
+    @MockBean
     FormattingConversionService conversionService;
 
     @Test
@@ -55,7 +60,7 @@ public class CustomerControllerTest {
         String lastName = "Doe";
         String password = "password";
         String email = "email@gmail.com";
-        CreateCustomerRequestModel requestModel = new CreateCustomerRequestModel(firstName, lastName, email, password);
+        CreateUpdateCustomerRequestModel requestModel = new CreateUpdateCustomerRequestModel(firstName, lastName, email, password);
         CustomerDto customerDto = CustomerDto.builder().build();
         CustomerResponseModel customerResponseModel = CustomerResponseModel.builder()
                 .id(customerId)
@@ -179,12 +184,17 @@ public class CustomerControllerTest {
     public void testUnblockCustomer() throws Exception {
         Long customerId = 1l;
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
+        when(authenticationUtil.getAuthentication()).thenReturn(auth);
+
         mockMvc.perform(post("/customers/" + customerId + "/unblock")
                         .with(csrf()))
                 .andExpect(status().isNoContent())
                 .andReturn();
 
-        verify(customerService, times(1)).unblockCustomer(customerId);
+        verify(customerService, times(1)).unblockCustomer(customerId, auth);
+        verify(authenticationUtil, times(1)).getAuthentication();
     }
 
     private String asJsonString(final Object obj) {

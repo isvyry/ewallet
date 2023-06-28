@@ -7,9 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.svyry.ewallet.entity.Card;
+import ua.svyry.ewallet.entity.Customer;
 import ua.svyry.ewallet.exception.DeletedEntityException;
 import ua.svyry.ewallet.repository.CardRepository;
 import ua.svyry.ewallet.shared.CardDto;
@@ -26,9 +28,15 @@ public class CardService {
 
     private final CardRepository cardRepository;
     private final WalletService walletService;
+    private final CustomerService customerService;
     private final ConversionService conversionService;
+    private final AuthenticationUtil authenticationUtil;
 
-    public CardDto createCard(CardDto cardDetails) {
+    public CardDto createCard(CardDto cardDetails, Authentication currentAuthentication) {
+        Customer cardOwner = customerService.getCustomerByWalletId(cardDetails.getWalletId());
+
+        authenticationUtil.validateCustomerIsCurrentUser(cardOwner, currentAuthentication);
+
         if (cardRepository.existsByCardNumberAndIsDeletedIsFalse(cardDetails.getCardNumber())) {
             throw new EntityExistsException(String.format("Card with number: '%s' already exists",
                     cardDetails.getCardNumber()));
@@ -101,8 +109,11 @@ public class CardService {
         cardRepository.save(card);
     }
 
-    public void deleteCard(Long id) {
+    public void deleteCard(Long id, Authentication currentAuthentication) {
         Card cardToDelete = getById(id);
+
+        authenticationUtil.validateCustomerIsCurrentUser(cardToDelete.getWallet().getOwner(), currentAuthentication);
+
         log.warn(String.format("Deleting Card[id = %s, cardNumber = %s]", cardToDelete.getId(),
                 cardToDelete.getCardNumber()));
         cardToDelete.setDeleted(true);

@@ -12,6 +12,8 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -42,7 +44,9 @@ public class CustomerServiceTest {
     BCryptPasswordEncoder passwordEncoder = mock(BCryptPasswordEncoder.class);
     ConversionService conversionService = mock(ConversionService.class);
     WalletService walletService = mock(WalletService.class);
-    CustomerService service = new CustomerService(customerRepository, walletService, passwordEncoder, conversionService);
+    AuthenticationUtil authenticationUtil = mock(AuthenticationUtil.class);
+    CustomerService service = new CustomerService(customerRepository, walletService, passwordEncoder,
+            conversionService, authenticationUtil);
 
     @Captor
     ArgumentCaptor<Customer> customerCaptor;
@@ -163,11 +167,15 @@ public class CustomerServiceTest {
                 .isBlockedForTransactions(true)
                 .build();
 
+        Authentication auth = new UsernamePasswordAuthenticationToken("email", "");
+
+        when(authenticationUtil.getAuthentication()).thenReturn(auth);
         when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
 
-        service.unblockCustomer(customerId);
+        service.unblockCustomer(customerId, auth);
 
         verify(customerRepository, times(1)).findById(customerId);
+        verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(customerRepository, times(1)).save(customerCaptor.capture());
 
         Customer savedCustomer = customerCaptor.getValue();
