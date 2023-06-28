@@ -22,10 +22,30 @@ import ua.svyry.ewallet.shared.TransactionDto;
 import java.math.BigDecimal;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class TransactionService {
+
+    public TransactionService(CardService cardService, ConversionService conversionService,
+                              AuthenticationUtil authenticationUtil,
+                              SuspiciousActivityService suspiciousActivityService, DepositRepository depositRepository,
+                              WithdrawalRepository withdrawalRepository, TransferRepository transferRepository,
+                              TransactionRepository transactionRepository,
+                              @Value("${transaction.withdrawal.daily.limit:5000}") BigDecimal dailyWithdrawalLimit,
+                              @Value("${transaction.limit:2000}") BigDecimal singleTransactionLimit,
+                              @Value("${transaction.suspicious.limit:10000}") BigDecimal transactionSuspiciousAmountLimit) {
+        this.cardService = cardService;
+        this.conversionService = conversionService;
+        this.authenticationUtil = authenticationUtil;
+        this.suspiciousActivityService = suspiciousActivityService;
+        this.depositRepository = depositRepository;
+        this.withdrawalRepository = withdrawalRepository;
+        this.transferRepository = transferRepository;
+        this.transactionRepository = transactionRepository;
+        this.dailyWithdrawalLimit = dailyWithdrawalLimit;
+        this.singleTransactionLimit = singleTransactionLimit;
+        this.transactionSuspiciousAmountLimit = transactionSuspiciousAmountLimit;
+    }
 
     private final CardService cardService;
     private final ConversionService conversionService;
@@ -35,11 +55,8 @@ public class TransactionService {
     private final WithdrawalRepository withdrawalRepository;
     private final TransferRepository transferRepository;
     private final TransactionRepository transactionRepository;
-    @Value("${transaction.withdrawal.daily.limit:5000}")
     private final BigDecimal dailyWithdrawalLimit;
-    @Value("${transaction.limit:2000}")
     private final BigDecimal singleTransactionLimit;
-    @Value("${transaction.suspicious.limit:10000}")
     private final BigDecimal transactionSuspiciousAmountLimit;
 
     public TransactionDto depositFunds(TransactionDto transactionDetails, Authentication currentAuthentication) {
