@@ -23,8 +23,8 @@ public class WebSecurity {
     private final BCryptPasswordEncoder passwordEncoder;
     @Value("${token.secret}")
     private String jwtSecret;
-    @Value("server.servlet.context-path")
-    private String pathPrefix;
+    @Value("${token.expiration-time}")
+    private Long expirationTime;
 
     @Bean
     protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
@@ -35,7 +35,8 @@ public class WebSecurity {
                 .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .addFilter(new AuthenticationFilter(authenticationManager(httpSecurity), customerService, jwtSecret))
+                .addFilter(new AuthenticationFilter(authenticationManager(httpSecurity), customerService,
+                        jwtSecret, expirationTime))
                 .addFilterBefore(new AuthorizationHeaderFilter(authenticationManager(httpSecurity), customerService, jwtSecret), UsernamePasswordAuthenticationFilter.class)
                 .authenticationManager(authenticationManager(httpSecurity))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)

@@ -1,9 +1,10 @@
 package ua.svyry.ewallet.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,8 @@ import ua.svyry.ewallet.repository.WithdrawalRepository;
 import ua.svyry.ewallet.shared.TransactionDto;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -27,7 +30,7 @@ import java.math.BigDecimal;
 public class TransactionService {
 
     public TransactionService(CardService cardService, ConversionService conversionService,
-                              AuthenticationUtil authenticationUtil,
+                              CustomerService customerService, AuthenticationUtil authenticationUtil,
                               SuspiciousActivityService suspiciousActivityService, DepositRepository depositRepository,
                               WithdrawalRepository withdrawalRepository, TransferRepository transferRepository,
                               TransactionRepository transactionRepository,
@@ -35,6 +38,7 @@ public class TransactionService {
                               @Value("${transaction.limit:2000}") BigDecimal singleTransactionLimit,
                               @Value("${transaction.suspicious.limit:10000}") BigDecimal transactionSuspiciousAmountLimit) {
         this.cardService = cardService;
+        this.customerService = customerService;
         this.conversionService = conversionService;
         this.authenticationUtil = authenticationUtil;
         this.suspiciousActivityService = suspiciousActivityService;
@@ -48,6 +52,7 @@ public class TransactionService {
     }
 
     private final CardService cardService;
+    private final CustomerService customerService;
     private final ConversionService conversionService;
     private final AuthenticationUtil authenticationUtil;
     private final SuspiciousActivityService suspiciousActivityService;
@@ -124,6 +129,35 @@ public class TransactionService {
         return conversionService.convert(savedTransfer, TransactionDto.class);
     }
 
+    public List<TransactionDto> getAllTransactionsByCustomerId(Long customerId, Authentication currentAuthentication,
+                                                               Pageable pageable) {
+        Customer customer = customerService.getCustomerById(customerId);
+
+        authenticationUtil.validateCustomerIsCurrentUser(customer, currentAuthentication);
+
+        Page<Transaction> transactions = transactionRepository
+                .findAllByCard_Wallet_OwnerAndCardIsDeletedIsFalse(customer, pageable);
+
+        return transactions.stream().map(t -> conversionService.convert(t, TransactionDto.class))
+                .collect(Collectors.toList());
+    }
+
+    public List<TransactionDto> getAllTransactionsByCardId(Long cardId, Authentication currentAuthentication,
+                                                           Pageable pageable) {
+        Card card = cardService.getById(cardId);
+
+        authenticationUtil.validateCustomerIsCurrentUser(card.getWallet().getOwner(), currentAuthentication);
+
+        Page<Transaction> transactions = transactionRepository.findAllByCard(card, pageable);
+
+        return transactions.stream().map(t -> conversionService.convert(t, TransactionDto.class))
+                .collect(Collectors.toList());
+    }
+
+    public int getLastHourSuspiciousTransactionsByCustomer(Customer customer) {
+        return transactionRepository.countAllSuspiciousByCustomerForTheLastHour(customer.getId());
+    }
+
     private boolean isAboveWithdrawalLimit(Long customerId, Long cardId, BigDecimal transactionAmount) {
         BigDecimal doneWithdrawalSum = transactionRepository
                 .selectDailyTransactionsAmountSummedUpByCustomerAndByCard(customerId, cardId)
@@ -137,10 +171,6 @@ public class TransactionService {
         } else {
             return false;
         }
-    }
-
-    public int getLastHourSuspiciousTransactionsByCustomer(Customer customer) {
-        return transactionRepository.countAllSuspiciousByCustomerForTheLastHour(customer.getId());
     }
 
     private void populateTransaction(Transaction transaction, BigDecimal amount, Card card) {

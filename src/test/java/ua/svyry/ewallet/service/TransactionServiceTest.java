@@ -42,10 +42,11 @@ public class TransactionServiceTest {
     DepositRepository depositRepository = mock(DepositRepository.class);
     WithdrawalRepository withdrawalRepository = mock(WithdrawalRepository.class);
     TransferRepository transferRepository = mock(TransferRepository.class);
+    CustomerService customerService = mock(CustomerService.class);
     TransactionRepository transactionRepository = mock(TransactionRepository.class);
     AuthenticationUtil authenticationUtil = mock(AuthenticationUtil.class);
 
-    TransactionService service = new TransactionService(cardService, conversionService,
+    TransactionService service = new TransactionService(cardService, conversionService, customerService,
             authenticationUtil, suspiciousActivityService, depositRepository, withdrawalRepository,
             transferRepository, transactionRepository, BigDecimal.valueOf(5000), BigDecimal.valueOf(2000),
             BigDecimal.valueOf(10000));

@@ -1,9 +1,13 @@
 package ua.svyry.ewallet.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
+import ua.svyry.ewallet.entity.Card;
+import ua.svyry.ewallet.entity.Customer;
 import ua.svyry.ewallet.entity.Transaction;
 
 import java.math.BigDecimal;
@@ -29,4 +33,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     Optional<BigDecimal> selectDailyTransactionsAmountSummedUpByCustomerAndByCard(@Param("customerId") Long customerId,
                                                                                   @Param("cardId") Long cardId);
 
+    Page<Transaction> findAllByCard(Card card, Pageable pageable);
+    Page<Transaction> findAllByCard_Wallet_OwnerAndCardIsDeletedIsFalse(Customer customer, Pageable pageable);
 }

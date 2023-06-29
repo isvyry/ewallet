@@ -21,7 +21,7 @@ public class CreateCardRequestModel {
     private BigDecimal balance;
     @NotNull(message = "cardNumber should not be null")
     @CreditCardNumber(ignoreNonDigitCharacters = true,
-            message = "cardNumber should not contain any non-digit character")
+            message = "cardNumber should be valid")
     private String cardNumber;
     @FutureOrPresent(message = "expiration date should not be in past")
     @NotNull(message = "expiration date should not be null")

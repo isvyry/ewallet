@@ -1,7 +1,6 @@
 package ua.svyry.ewallet.configuration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.FilterChain;
@@ -31,12 +30,14 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final CustomerService customerService;
 
     private final String jwtSecret;
+    private final Long expirationTime;
 
     public AuthenticationFilter(AuthenticationManager authenticationManager, CustomerService customerService,
-                                String jwtSecret) {
+                                String jwtSecret, Long expirationTime) {
         super(authenticationManager);
         this.jwtSecret = jwtSecret;
         this.customerService = customerService;
+        this.expirationTime = expirationTime;
     }
 
     @Override
@@ -68,7 +69,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
         String jwt = Jwts.builder()
                 .setSubject(customer.getUserId().toString())
-                .setExpiration(Date.from(now.plusMillis(7200000)))
+                .setExpiration(Date.from(now.plusMillis(expirationTime)))
                 .setIssuedAt(Date.from(now))
                 .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
