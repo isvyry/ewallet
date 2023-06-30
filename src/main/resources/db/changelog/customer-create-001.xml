@@ -17,7 +17,7 @@
             <column  name="first_name"  type="varchar(255)"/>
             <column  name="last_name"  type="varchar(255)"/>
             <column  name="email"  type="varchar(255)"/>
-            <column  name="encrypted_password"  type="char(255)"/>
+            <column  name="encrypted_password"  type="varchar(255)"/>
             <column  name="is_suspicious"  type="boolean"/>
             <column  name="is_blocked_for_transactions"  type="boolean"/>
             <column  name="created_date"  type="timestamp(6)"/>

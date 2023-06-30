@@ -78,14 +78,14 @@ public class CardServiceTest {
         when(conversionService.convert(cardDetails, Card.class)).thenReturn(card);
         when(customerService.getCustomerByWalletId(walletId)).thenReturn(customer);
         when(cardRepository.save(card)).thenReturn(card);
-        when(cardRepository.existsByCardNumberAndIsDeletedIsFalse(any())).thenReturn(false);
+        when(cardRepository.existsByCardNumber(any())).thenReturn(false);
 
         service.createCard(cardDetails, auth);
 
         verify(customerService, times(1)).getCustomerByWalletId(walletId);
         verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(cardRepository, times(1)).save(any());
-        verify(cardRepository, times(1)).existsByCardNumberAndIsDeletedIsFalse(any());
+        verify(cardRepository, times(1)).existsByCardNumber(any());
         verify(walletService, times(1)).getById(1l);
         verify(conversionService, times(1)).convert(cardDetails, Card.class);
         verify(conversionService, times(1)).convert(card, CardDto.class);
@@ -115,7 +115,7 @@ public class CardServiceTest {
         when(conversionService.convert(cardDetails, Card.class)).thenReturn(card);
         when(customerService.getCustomerByWalletId(walletId)).thenReturn(customer);
         when(cardRepository.save(card)).thenReturn(card);
-        when(cardRepository.existsByCardNumberAndIsDeletedIsFalse(any())).thenReturn(true);
+        when(cardRepository.existsByCardNumber(any())).thenReturn(true);
 
         Executable exec = () -> service.createCard(cardDetails, auth);
 
@@ -124,7 +124,7 @@ public class CardServiceTest {
         verify(customerService, times(1)).getCustomerByWalletId(walletId);
         verify(authenticationUtil, times(1)).validateCustomerIsCurrentUser(customer, auth);
         verify(cardRepository, times(0)).save(any());
-        verify(cardRepository, times(1)).existsByCardNumberAndIsDeletedIsFalse(any());
+        verify(cardRepository, times(1)).existsByCardNumber(any());
         verify(walletService, times(0)).getById(1l);
         verify(conversionService, times(0)).convert(cardDetails, Card.class);
         verify(conversionService, times(0)).convert(card, CardDto.class);

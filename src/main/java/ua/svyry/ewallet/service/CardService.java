@@ -37,7 +37,7 @@ public class CardService {
 
         authenticationUtil.validateCustomerIsCurrentUser(cardOwner, currentAuthentication);
 
-        if (cardRepository.existsByCardNumberAndIsDeletedIsFalse(cardDetails.getCardNumber())) {
+        if (cardRepository.existsByCardNumber(cardDetails.getCardNumber())) {
             throw new EntityExistsException(String.format("Card with number: '%s' already exists",
                     cardDetails.getCardNumber()));
         }
